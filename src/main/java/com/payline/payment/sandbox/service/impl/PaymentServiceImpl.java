@@ -33,11 +33,11 @@ import java.util.Map;
 
 import static com.payline.pmapi.bean.common.Message.MessageType.SUCCESS;
 
-public class PaymentServiceImpl implements PaymentService {
+public class PaymentServiceImpl extends AbstractService implements PaymentService {
 
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
-        this.verifyRequest( paymentRequest );
+        this.verifyRequest(paymentRequest);
         return this.processRequest(paymentRequest);
     }
 
@@ -47,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
      * (ex: PartnerConfiguration, Order, etc.)
      * @param paymentRequest
      */
-    private void verifyRequest( PaymentRequest paymentRequest){
+    private void verifyRequest(PaymentRequest paymentRequest) {
         // TODO ! (if any required attribute is missing, throw a RuntimeException)
     }
 
@@ -66,7 +66,6 @@ public class PaymentServiceImpl implements PaymentService {
         if ("PAYMENT_RESPONSE_REDIRECT".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
             paymentResponse = processRequestWithPaymentResponseRedirect(paymentRequest);
         }
-
 
         // PAYMENT RESPONSE FORM UPDATED
         if ("PAYMENT_RESPONSE_FORM_UPDATED".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
@@ -95,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // GENERIC PLUGIN ERROR CASE
         if ("PAYMENT_RESPONSE_GENERIC_ERROR".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseGenericError(paymentRequest);
+            paymentResponse = (PaymentResponse) processRequestWithResponseGenericError(paymentRequest);
         }
 
         return paymentResponse;
@@ -416,29 +415,6 @@ public class PaymentServiceImpl implements PaymentService {
                     .withFailureCause(FailureCause.INVALID_DATA)
                     .build();
 
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
-    private PaymentResponse processRequestWithPaymentResponseGenericError(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        if (new BigInteger("10098").equals(amount)) {
-            // Return null
-            // Nothing to do, the response object is already initialized to null
-        }
-
-        if (new BigInteger("10099").equals(amount)) {
-            // Return exception
-            throw new NullPointerException();
         }
 
         return null;
