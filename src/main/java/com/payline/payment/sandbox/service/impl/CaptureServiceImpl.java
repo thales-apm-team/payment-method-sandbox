@@ -66,7 +66,7 @@ public class CaptureServiceImpl extends AbstractService implements CaptureServic
             captureResponse = (CaptureResponse) processRequestWithResponseGenericError(captureRequest);
         }
 
-        return null;
+        return captureResponse;
 
     }
 

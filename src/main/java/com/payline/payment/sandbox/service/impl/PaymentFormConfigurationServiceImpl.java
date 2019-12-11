@@ -88,7 +88,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService impleme
             paymentResponse = (PaymentFormConfigurationResponse) processRequestWithResponseGenericError(paymentFormConfigurationRequest);
         }
 
-        return null;
+        return paymentResponse;
 
     }
 

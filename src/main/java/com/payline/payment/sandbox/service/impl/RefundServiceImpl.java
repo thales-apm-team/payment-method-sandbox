@@ -2,7 +2,6 @@ package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
 import com.payline.pmapi.bean.common.FailureCause;
-import com.payline.pmapi.bean.payment.response.PaymentResponse;
 import com.payline.pmapi.bean.refund.request.RefundRequest;
 import com.payline.pmapi.bean.refund.response.RefundResponse;
 import com.payline.pmapi.bean.refund.response.impl.RefundResponseFailure;
@@ -52,7 +51,6 @@ public class RefundServiceImpl extends AbstractService implements RefundService 
 
         BigInteger amount = refundRequest.getAmount().getAmountInSmallestUnit();
 
-
         // REFUND RESPONSE SUCCESS
         if ("REFUND_RESPONSE_SUCCESS".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
             refundResponse = processRequestWithRefundResponseSuccess(refundRequest);
@@ -68,7 +66,7 @@ public class RefundServiceImpl extends AbstractService implements RefundService 
             refundResponse = (RefundResponse) processRequestWithResponseGenericError(refundRequest);
         }
 
-        return null;
+        return refundResponse;
 
     }
 
