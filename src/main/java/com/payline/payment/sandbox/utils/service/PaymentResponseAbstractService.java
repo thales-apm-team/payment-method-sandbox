@@ -10,10 +10,11 @@ import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.Card;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.BankTransfer;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.Email;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.EmptyTransactionDetails;
-import com.payline.pmapi.bean.payment.response.impl.*;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseDoPayment;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.YearMonth;
 
 /**

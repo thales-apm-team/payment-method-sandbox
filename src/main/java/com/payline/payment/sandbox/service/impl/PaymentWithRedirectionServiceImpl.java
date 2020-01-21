@@ -31,19 +31,31 @@ public class PaymentWithRedirectionServiceImpl extends PaymentResponseAbstractSe
      * @param redirectionPaymentRequest the request to verify
      */
     private void verifyRequest(RedirectionPaymentRequest redirectionPaymentRequest){
-        // RAS
-        // TODO: add null checks ?
+        if( redirectionPaymentRequest.getAmount() == null ){
+            throw new IllegalArgumentException( "The RedirectionPaymentRequest is missing an amount" );
+        }
+        if( redirectionPaymentRequest.getContractConfiguration() == null
+                || redirectionPaymentRequest.getEnvironment() == null
+                || redirectionPaymentRequest.getPartnerConfiguration() == null ){
+            throw new IllegalArgumentException( "The RedirectionPaymentRequest is missing required data" );
+        }
     }
 
     /**
      * Performs standard verification of the request content.
      * Checks that every field required to recover the state of a transaction when user session has expired is filled in the request.
      * (ex: transactionId)
-     * @param redirectionPaymentRequest the request to verify
+     * @param transactionStatusRequest the request to verify
      */
-    private void verifyRequest(TransactionStatusRequest redirectionPaymentRequest){
-        // RAS
-        // TODO: add null checks ?
+    private void verifyRequest(TransactionStatusRequest transactionStatusRequest){
+        if( transactionStatusRequest.getAmount() == null ){
+            throw new IllegalArgumentException( "The TransactionStatusRequest is missing an amount" );
+        }
+        if( transactionStatusRequest.getContractConfiguration() == null
+                || transactionStatusRequest.getEnvironment() == null
+                || transactionStatusRequest.getPartnerConfiguration() == null ){
+            throw new IllegalArgumentException( "The TransactionStatusRequest is missing required data" );
+        }
     }
 
     private PaymentResponse process( String amount ){
