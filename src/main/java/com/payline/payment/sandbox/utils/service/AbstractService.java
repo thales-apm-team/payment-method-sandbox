@@ -1,23 +1,20 @@
-package com.payline.payment.sandbox.service.impl;
+package com.payline.payment.sandbox.utils.service;
 
 import com.payline.payment.sandbox.utils.PluginUtils;
 import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.notification.request.NotificationRequest;
-import com.payline.pmapi.bean.notification.response.NotificationResponse;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.refund.request.RefundRequest;
 import com.payline.pmapi.bean.reset.request.ResetRequest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
 public class AbstractService<T> {
+
+    protected final static String PARTNER_TRANSACTION_ID = "PARTNER_ID.0123456789";
 
     /**
      *
@@ -114,6 +111,5 @@ public class AbstractService<T> {
 
         throw new IllegalArgumentException("Illegal (invalid or unknown) magic amount : " + magicAmount);
     }
-
 
 }

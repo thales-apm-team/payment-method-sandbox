@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
 import com.payline.payment.sandbox.utils.PluginUtils;
 import com.payline.pmapi.bean.common.*;
