@@ -4,168 +4,173 @@ import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.paymentform.bean.PaymentFormLogo;
+import com.payline.pmapi.bean.paymentform.bean.field.SelectOption;
+import com.payline.pmapi.bean.paymentform.bean.form.BankTransferForm;
+import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.NoFieldForm;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormLogoRequest;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseFailure;
+import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseProvided;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
 import com.payline.pmapi.bean.paymentform.response.logo.PaymentFormLogoResponse;
+import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseFile;
 import com.payline.pmapi.service.PaymentFormConfigurationService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
-public class PaymentFormConfigurationServiceImpl extends AbstractService implements PaymentFormConfigurationService {
+public class PaymentFormConfigurationServiceImpl extends AbstractService<PaymentFormConfigurationResponse> implements PaymentFormConfigurationService {
 
     @Override
     public PaymentFormConfigurationResponse getPaymentFormConfiguration(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
         this.verifyRequest(paymentFormConfigurationRequest);
-        return this.processRequest(paymentFormConfigurationRequest);
+
+        String amount = paymentFormConfigurationRequest.getAmount().getAmountInSmallestUnit().toString();
+
+        /* Default case */
+        NoFieldForm noFieldForm = NoFieldForm.NoFieldFormBuilder.aNoFieldForm()
+                .withDisplayButton(true)
+                .withButtonText("Button text")
+                .withDescription("")
+                .build();
+
+        PaymentFormConfigurationResponseSpecific noFieldResponse = PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder
+                .aPaymentFormConfigurationResponseSpecific()
+                .withPaymentForm( noFieldForm )
+                .build();
+        // The service tested by this request is not PaymentFormConfigurationService. So the plugin returns a NoField form.
+        if( !amount.startsWith("3") ){
+            return noFieldResponse;
+        }
+
+        switch( amount ){
+            /* PaymentFormConfigurationResponseSpecific */
+            case "30000":
+                return noFieldResponse;
+            case "30001":
+                // retrieve the banks list from PluginConfiguration
+                if( paymentFormConfigurationRequest.getPluginConfiguration() == null ){
+                    throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
+                }
+                final List<SelectOption> banks = new ArrayList<>();
+                for( String s : paymentFormConfigurationRequest.getPluginConfiguration().split("|") ){
+                    String[] pieces = s.split(":");
+                    banks.add( SelectOption.SelectOptionBuilder.aSelectOption()
+                            .withKey( pieces[0] )
+                            .withValue( pieces[1] )
+                            .build() );
+                }
+
+                // Build form
+                CustomForm form = BankTransferForm.builder()
+                        .withBanks( banks )
+                        .withDescription( "Description" )
+                        .withDisplayButton( true )
+                        .withButtonText( "Payer" )
+                        .withCustomFields( new ArrayList<>() )
+                        .build();
+
+                return PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm( form )
+                        .build();
+
+            case "30002":
+                // TODO: exhaustive CustomForm which includes all the possible fields ! (see Confluence)
+                return noFieldResponse;
+
+            /* PaymentFormConfigurationResponseFailure */
+            case "30100":
+                return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
+                        .withErrorCode("Error code less than 50 characters long")
+                        .withFailureCause( FailureCause.INVALID_DATA )
+                        .build();
+            case "30101":
+                return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
+                        .withErrorCode("This error code has not been truncated and is more than 50 characters long")
+                        .withFailureCause( FailureCause.INVALID_DATA )
+                        .build();
+
+            /* PaymentFormConfigurationResponseProvided */
+            case "30200":
+                return PaymentFormConfigurationResponseProvided.PaymentFormConfigurationResponseBuilder.aPaymentFormConfigurationResponse()
+                        .withContextPaymentForm( new HashMap<>() )
+                        .build();
+
+            /* Generic plugin errors */
+            default:
+                return super.generic( amount );
+        }
     }
 
     @Override
     public PaymentFormLogoResponse getPaymentFormLogo(PaymentFormLogoRequest paymentFormLogoRequest) {
         this.verifyRequest(paymentFormLogoRequest);
-        // FIXME : No amount in request
-        return null;
+
+        return PaymentFormLogoResponseFile.PaymentFormLogoResponseFileBuilder.aPaymentFormLogoResponseFile()
+                .withHeight( 58 )
+                .withWidth( 156 )
+                .withTitle("Sandbox APM")
+                .withAlt("Sandbox APM logo")
+                .build();
     }
 
     @Override
     public PaymentFormLogo getLogo(String s, Locale locale) {
-        return null;
-    }
+        InputStream input = this.getClass().getClassLoader().getResourceAsStream( "payline_logo.png" );
+        if (input == null) {
+            throw new RuntimeException("Plugin error: unable to load the logo file");
+        }
+        try {
+            // Read logo file
+            BufferedImage logo = ImageIO.read(input);
 
-    @Override
-    public PaymentFormLogo getSchemeLogo(String schemeName) {
-        return null;
+            // Recover byte array from image
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(logo, "png", baos);
+
+            return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
+                    .withFile(baos.toByteArray())
+                    .withContentType("image/png")
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException("Plugin error: unable to read the logo", e);
+        }
     }
 
     /**
      * Performs standard verification of the request content.
-     * Checks that every field required to process to a payment is filled in the request
-     * (ex: PartnerConfiguration, Order, etc.)
-     * @param paymentFormConfigurationRequest
+     * Checks that every field required in the request is filled
+     * @param paymentFormConfigurationRequest the request
      */
     private void verifyRequest(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
-        // TODO ! (if any required attribute is missing, throw a RuntimeException)
+        if( paymentFormConfigurationRequest.getAmount() == null ){
+            throw new IllegalArgumentException( "The PaymentFormConfigurationRequest is missing an amount" );
+        }
+        if( paymentFormConfigurationRequest.getLocale() == null ){
+            throw new IllegalArgumentException( "The PaymentFormConfigurationRequest is missing a locale" );
+        }
     }
 
     /**
      * Performs standard verification of the request content.
-     * Checks that every field required to process to a payment is filled in the request
-     * (ex: PartnerConfiguration, Order, etc.)
-     * @param paymentFormLogoRequest
+     *      * Checks that every field required in the request is filled
+     * @param paymentFormLogoRequest the request
      */
     private void verifyRequest(PaymentFormLogoRequest paymentFormLogoRequest) {
-        // TODO ! (if any required attribute is missing, throw a RuntimeException)
-    }
-
-    /**
-     *
-     * @param paymentFormConfigurationRequest
-     * @return
-     */
-    private PaymentFormConfigurationResponse processRequest(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
-
-        // TODO: given the paymentRequest.amount (magic amount), return the corresponding response
-
-        PaymentFormConfigurationResponse paymentResponse = null;
-
-        BigInteger amount = paymentFormConfigurationRequest.getAmount().getAmountInSmallestUnit();
-
-        // PAYMENT FORM CONFIGURATION RESPONSE SPECIFIC
-        if ("PAYMENT_FORM_CONFIGURATION_RESPONSE_SPECIFIC".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentFormConfigurationResponse(paymentFormConfigurationRequest);
+        if( paymentFormLogoRequest.getLocale() == null ){
+            throw new IllegalArgumentException( "The PaymentFormLogoRequest is missing a locale" );
         }
-
-        // PAYMENT RESPONSE FAILURE
-        if ("PAYMENT_RESPONSE_FAILURE".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseFailure(paymentFormConfigurationRequest);
-        }
-
-        // GENERIC PLUGIN ERROR CASE
-        if ("PAYMENT_RESPONSE_GENERIC_ERROR".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = (PaymentFormConfigurationResponse) processRequestWithResponseGenericError(paymentFormConfigurationRequest);
-        }
-
-        return paymentResponse;
-
-    }
-
-    /**
-     *
-     * @param paymentFormConfigurationRequest
-     * @return
-     */
-    private PaymentFormConfigurationResponse processRequestWithPaymentFormConfigurationResponse(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
-
-        BigInteger amount = paymentFormConfigurationRequest.getAmount().getAmountInSmallestUnit();
-
-        if (new BigInteger("30000").equals(amount)) {
-
-            NoFieldForm noFieldForm = NoFieldForm
-                    .NoFieldFormBuilder
-                    .aNoFieldForm()
-                    .withDisplayButton(true)
-                    .withButtonText("Button text")
-                    .withDescription("")
-                    .build();
-
-            return PaymentFormConfigurationResponseSpecific
-                    .PaymentFormConfigurationResponseSpecificBuilder
-                    .aPaymentFormConfigurationResponseSpecific()
-                    .withPaymentForm(noFieldForm)
-                    .build();
-
-        }
-
-        if (new BigInteger("30001").equals(amount)) {
-
-            return PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder.aPaymentFormConfigurationResponseSpecific().withPaymentForm(NoFieldForm.NoFieldFormBuilder.aNoFieldForm()
-                    .withButtonText("Button text")
-                    .withDescription("Description")
-                    .withDisplayButton(true)
-                    .build()).build();
-
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentFormConfigurationRequest
-     * @return
-     */
-    private PaymentFormConfigurationResponse processRequestWithPaymentResponseFailure(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
-
-        BigInteger amount = paymentFormConfigurationRequest.getAmount().getAmountInSmallestUnit();
-
-        if (new BigInteger("30090").equals(amount)) {
-
-            return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder
-                    .aPaymentFormConfigurationResponseFailure()
-                    .withPartnerTransactionId("NO TRANSACTION YET")
-                    .withErrorCode("Unable to read js file")
-                    .withFailureCause(FailureCause.INTERNAL_ERROR)
-                    .build();
-
-        }
-
-        if (new BigInteger("30091").equals(amount)) {
-
-            return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder
-                    .aPaymentFormConfigurationResponseFailure()
-                    .withErrorCode("Plugin error")
-                    .withFailureCause(FailureCause.INTERNAL_ERROR)
-                    .build();
-
-        }
-
-        return null;
-
     }
 
 }
