@@ -14,8 +14,6 @@ import java.math.BigInteger;
 
 public class AbstractService<T> {
 
-    protected final static String PARTNER_TRANSACTION_ID = "PARTNER_ID.0123456789";
-
     /**
      *
      * @param request

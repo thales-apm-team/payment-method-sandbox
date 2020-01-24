@@ -1,12 +1,13 @@
 package com.payline.payment.sandbox.service.impl;
 
-import com.payline.payment.sandbox.utils.service.PaymentResponseAbstractService;
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
+import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
 import com.payline.pmapi.bean.payment.request.TransactionStatusRequest;
 import com.payline.pmapi.bean.payment.response.PaymentResponse;
 import com.payline.pmapi.service.PaymentWithRedirectionService;
 
-public class PaymentWithRedirectionServiceImpl extends PaymentResponseAbstractService implements PaymentWithRedirectionService {
+public class PaymentWithRedirectionServiceImpl extends AbstractService<PaymentResponse> implements PaymentWithRedirectionService {
 
     @Override
     public PaymentResponse finalizeRedirectionPayment(RedirectionPaymentRequest redirectionPaymentRequest) {
@@ -65,33 +66,33 @@ public class PaymentWithRedirectionServiceImpl extends PaymentResponseAbstractSe
         switch( amountLastDigits ){
             /* PaymentResponseSuccess */
             case "000":
-                return super.successMinimal();
+                return PaymentResponseUtil.successMinimal();
             case "001":
-                return super.successAdditionalData();
+                return PaymentResponseUtil.successAdditionalData();
             case "002":
-                return super.successBankTransferDetails();
+                return PaymentResponseUtil.successBankTransferDetails();
             case "003":
-                return super.successEmailDetails();
+                return PaymentResponseUtil.successEmailDetails();
 
             /* PaymentResponseFailure */
             case "100":
-                return super.failureClassic();
+                return PaymentResponseUtil.failureClassic();
             case "101":
-                return super.failureMinimal();
+                return PaymentResponseUtil.failureMinimal();
             case "102":
-                return super.failureLongErrorCode();
+                return PaymentResponseUtil.failureLongErrorCode();
             case "103":
-                return super.failureWithPartnerTransactionId();
+                return PaymentResponseUtil.failureWithPartnerTransactionId();
 
             /* PaymentResponseOnHold */
             case "200":
-                return super.onHoldMinimalScoringAsync();
+                return PaymentResponseUtil.onHoldMinimalScoringAsync();
             case "201":
-                return super.onHoldMinimalAsyncRetry();
+                return PaymentResponseUtil.onHoldMinimalAsyncRetry();
 
             /* PaymentResponseDoPayment */
             case "300":
-                return super.doPaymentMinimal();
+                return PaymentResponseUtil.doPaymentMinimal();
 
             /* Generic plugin behaviours */
             default:

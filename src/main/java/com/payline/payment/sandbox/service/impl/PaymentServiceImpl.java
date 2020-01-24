@@ -1,6 +1,7 @@
 package com.payline.payment.sandbox.service.impl;
 
-import com.payline.payment.sandbox.utils.service.PaymentResponseAbstractService;
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
+import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.payment.RequestContext;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.response.PaymentResponse;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class PaymentServiceImpl extends PaymentResponseAbstractService implements PaymentService {
+public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
 
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
@@ -61,16 +62,16 @@ public class PaymentServiceImpl extends PaymentResponseAbstractService implement
 
         /* PaymentResponseFailure */
         if( "10100".equals( amount ) ){
-            return super.failureClassic();
+            return PaymentResponseUtil.failureClassic();
         }
         if( "10101".equals( amount ) ){
-            return super.failureMinimal();
+            return PaymentResponseUtil.failureMinimal();
         }
         if( "10102".equals( amount ) ){
-            return super.failureLongErrorCode();
+            return PaymentResponseUtil.failureLongErrorCode();
         }
         if( "10103".equals( amount ) ){
-            return super.failureWithPartnerTransactionId();
+            return PaymentResponseUtil.failureWithPartnerTransactionId();
         }
 
         /* PaymentResponseRedirect */
@@ -109,7 +110,7 @@ public class PaymentServiceImpl extends PaymentResponseAbstractService implement
 
         /* PaymentResponseDoPayment */
         if( "10400".equals( amount ) ){
-            return super.doPaymentMinimal();
+            return PaymentResponseUtil.doPaymentMinimal();
         }
 
         /* PaymentResponseActiveWaiting */
@@ -140,6 +141,7 @@ public class PaymentServiceImpl extends PaymentResponseAbstractService implement
      * @param paymentRequest
      * @return
      */
+    // TODO: remove !
     private PaymentResponse processRequestWithPaymentResponseFormUpdated(PaymentRequest paymentRequest) {
 
         BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
