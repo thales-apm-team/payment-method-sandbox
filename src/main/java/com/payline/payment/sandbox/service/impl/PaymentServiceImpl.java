@@ -36,17 +36,16 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         this.verifyRequest(paymentRequest);
 
         String amount = paymentRequest.getAmount().getAmountInSmallestUnit().toString();
-        String partnerTransactionId = "PARTNER_ID.0123456789";
 
         /* PaymentResponseSuccess */
         if( "10000".equals( amount )
                 || amount.matches("^[3-9][0-9]*$") ){
             // TODO: manage the case where the amount is "103XX" and the form has been updated
             PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
-                    .withPartnerTransactionId( partnerTransactionId )
+                    .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                     .withTransactionDetails( new EmptyTransactionDetails() );
 
-            // If the payment form contains data, put them into transaction additional data
+            // If the payment form contains data, put them into transaction additionnal data
             if( paymentRequest.getPaymentFormContext() != null
                     && paymentRequest.getPaymentFormContext().getPaymentFormParameter() != null
                     && !paymentRequest.getPaymentFormContext().getPaymentFormParameter().isEmpty() ){
@@ -87,7 +86,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         if( "10200".equals( amount ) || amount.startsWith("2") ){
             return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
                     .withRedirectionRequest( redirectionRequest )
-                    .withPartnerTransactionId( partnerTransactionId )
+                    .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                     .build();
         }
         if( "10201".equals( amount ) ){
@@ -95,7 +94,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
             context.put("key", "value");
             return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
                     .withRedirectionRequest( redirectionRequest )
-                    .withPartnerTransactionId( partnerTransactionId )
+                    .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                     .withStatusCode("PARTNER_STATUS")
                     .withRequestContext(
                             RequestContext.RequestContextBuilder.aRequestContext()
