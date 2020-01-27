@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Constants;
 import com.payline.payment.sandbox.utils.properties.ReleaseProperties;
 import com.payline.pmapi.bean.configuration.AvailableNetwork;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
@@ -19,7 +20,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     private static final String CHECK_ERROR_REQUIRED = "CHECK_ERROR_REQUIRED";
     private static final String CHECK_EXCEPTION = "CHECK_EXCEPTION";
     private static final String CHECK_NULL_RESPONSE = "CHECK_NULL_RESPONSE";
-    private static final String CHECK_OK = "CHECK_OK";
+    public static final String CHECK_OK = "CHECK_OK";
 
     private ReleaseProperties releaseProperties = ReleaseProperties.getInstance();
 
@@ -38,7 +39,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         /* ListBoxParameter */
         ListBoxParameter checkBehaviour = new ListBoxParameter();
         checkBehaviour.setDescription("Comportement attendu pour la méthode check()");
-        checkBehaviour.setKey("listbox");
+        checkBehaviour.setKey(Constants.ContractConfigurationKeys.LISTBOX_PARAMETER);
         checkBehaviour.setLabel("Check behaviour");
         checkBehaviour.setRequired(true);
         checkBehaviour.setList( behaviours );
@@ -46,14 +47,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         /* InputParameter */
         InputParameter inputParameter = new InputParameter();
         inputParameter.setDescription("Input parameter");
-        inputParameter.setKey("input");
+        inputParameter.setKey(Constants.ContractConfigurationKeys.INPUT_PARAMETER);
         inputParameter.setLabel("Input");
         inputParameter.setRequired(false);
 
         /* CheckboxParameter */
         CheckboxParameter checkboxParameter = new CheckboxParameter();
         checkboxParameter.setDescription("Checkbox parameter");
-        checkboxParameter.setKey("checkbox");
+        checkboxParameter.setKey(Constants.ContractConfigurationKeys.CHECKBOX_PARAMETER);
         checkboxParameter.setLabel("Checkbox");
         checkboxParameter.setRequired(false);
 
@@ -64,7 +65,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         nlbList.put("key3", "value 3");
         NetworkListBoxParameter nlbParameter = new NetworkListBoxParameter();
         nlbParameter.setDescription("Network list box parameter");
-        nlbParameter.setKey("networkListBox");
+        nlbParameter.setKey(Constants.ContractConfigurationKeys.NETWORK_LISTBOX_PARAMETER);
         nlbParameter.setLabel("NetworkListBox");
         nlbParameter.setList( nlbList );
         nlbParameter.setNetwork(AvailableNetwork.CB);
@@ -73,7 +74,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         /* PasswordParameter */
         PasswordParameter passwordParameter = new PasswordParameter();
         passwordParameter.setDescription("Password parameter");
-        passwordParameter.setKey("password");
+        passwordParameter.setKey(Constants.ContractConfigurationKeys.PASSWORD_PARAMETER);
         passwordParameter.setLabel("Password");
         passwordParameter.setRequired(false);
 
@@ -85,7 +86,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         Map<String, String> errors = new HashMap<>();
 
         // Retrieve the expected behaviour in the listbox parameter
-        String behaviour = contractParametersCheckRequest.getAccountInfo().get("listbox");
+        String behaviour = contractParametersCheckRequest.getAccountInfo()
+                .get(Constants.ContractConfigurationKeys.LISTBOX_PARAMETER);
 
         switch( behaviour ){
             case CHECK_OK:
