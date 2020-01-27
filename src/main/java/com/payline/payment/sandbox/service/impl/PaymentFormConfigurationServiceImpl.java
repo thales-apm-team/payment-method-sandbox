@@ -2,7 +2,6 @@ package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
-import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.paymentform.bean.PaymentFormLogo;
 import com.payline.pmapi.bean.paymentform.bean.field.SelectOption;
@@ -24,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

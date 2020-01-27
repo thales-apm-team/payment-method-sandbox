@@ -2,18 +2,12 @@ package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
-import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
-import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.refund.request.RefundRequest;
 import com.payline.pmapi.bean.refund.response.RefundResponse;
 import com.payline.pmapi.bean.refund.response.impl.RefundResponseFailure;
 import com.payline.pmapi.bean.refund.response.impl.RefundResponseSuccess;
-import com.payline.pmapi.bean.reset.response.impl.ResetResponseFailure;
-import com.payline.pmapi.bean.reset.response.impl.ResetResponseSuccess;
 import com.payline.pmapi.service.RefundService;
-
-import java.math.BigInteger;
 
 public class RefundServiceImpl extends AbstractService<RefundResponse> implements RefundService {
 
