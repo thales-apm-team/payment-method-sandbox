@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -99,6 +100,12 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("This error code has not been truncated and is more than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
+                        .build();
+            case "30102":
+                return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
+                        .withErrorCode("Error code less than 50 characters long")
+                        .withFailureCause( FailureCause.INVALID_DATA )
+                        .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                         .build();
 
             /* PaymentFormConfigurationResponseProvided */
