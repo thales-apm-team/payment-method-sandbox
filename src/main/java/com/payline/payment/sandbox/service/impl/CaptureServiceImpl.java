@@ -47,7 +47,7 @@ public class CaptureServiceImpl extends AbstractService<CaptureResponse> impleme
 
     /**
      * Performs standard verification of the request content.
-     * Checks that every field required to process to a payment is filled in the request
+     * Checks that every field required in the request is filled.
      * @param captureRequest the request
      */
     private void verifyRequest(CaptureRequest captureRequest) {
