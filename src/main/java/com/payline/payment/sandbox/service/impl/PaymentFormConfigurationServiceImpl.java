@@ -85,7 +85,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .build();
 
             case "30002":
-                // TODO: exhaustive CustomForm which includes all the possible fields ! (see Confluence)
+                // TODO: exhaustive CustomForm which includes all the possible fields ! (PAYLAPMEXT-209)
                 return noFieldResponse;
 
             /* PaymentFormConfigurationResponseFailure */

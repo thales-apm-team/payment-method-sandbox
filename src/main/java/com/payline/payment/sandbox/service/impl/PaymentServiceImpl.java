@@ -40,12 +40,12 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         /* PaymentResponseSuccess */
         if( "10000".equals( amount )
                 || amount.matches("^[3-9][0-9]*$") ){
-            // TODO: manage the case where the amount is "103XX" and the form has been updated
+            // TODO: manage the case where the amount is "103XX" and the form has been updated (PAYLAPMEXT-207)
             PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
                     .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                     .withTransactionDetails( new EmptyTransactionDetails() );
 
-            // If the payment form contains data, put them into transaction additionnal data
+            // If the payment form contains data, put them into transaction additional data
             if( paymentRequest.getPaymentFormContext() != null
                     && paymentRequest.getPaymentFormContext().getPaymentFormParameter() != null
                     && !paymentRequest.getPaymentFormContext().getPaymentFormParameter().isEmpty() ){
@@ -105,7 +105,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
 
         /* PaymentResponseFormUpdated */
-        // TODO !
+        // TODO : PAYLAPMEXT-207
 
         /* PaymentResponseDoPayment */
         if( "10400".equals( amount ) ){
@@ -140,7 +140,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
      * @param paymentRequest
      * @return
      */
-    // TODO: remove !
+    // TODO: remove (lors du traitement du ticket PAYLAPMEXT-207)
     private PaymentResponse processRequestWithPaymentResponseFormUpdated(PaymentRequest paymentRequest) {
 
         BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();

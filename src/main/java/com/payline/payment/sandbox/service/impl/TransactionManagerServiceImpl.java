@@ -9,6 +9,7 @@ public class TransactionManagerServiceImpl implements TransactionManagerService 
 
     @Override
     public Map<String, String> readAdditionalData(String s, String s1) {
+        // TODO: PAYLAPMEXT-206
         return new HashMap<>();
     }
 }
