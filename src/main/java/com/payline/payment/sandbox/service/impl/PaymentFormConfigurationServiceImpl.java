@@ -62,7 +62,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                     throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
                 }
                 final List<SelectOption> banks = new ArrayList<>();
-                for( String s : paymentFormConfigurationRequest.getPluginConfiguration().split("|") ){
+                for( String s : paymentFormConfigurationRequest.getPluginConfiguration().split("\\|") ){
                     String[] pieces = s.split(":");
                     banks.add( SelectOption.SelectOptionBuilder.aSelectOption()
                             .withKey( pieces[0] )
