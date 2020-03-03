@@ -289,9 +289,15 @@ public class MockUtils {
         paymentFormParameter.put("Key2", "Value2");
         paymentFormParameter.put("Key3", "Value3");
 
+        Map<String, String> SensitivePaymentFormParameter = new HashMap<>();
+
+        SensitivePaymentFormParameter.put("Key11", "Value11");
+        SensitivePaymentFormParameter.put("Key12", "Value12");
+        SensitivePaymentFormParameter.put("Key13", "Value13");
+
         return PaymentFormContext.PaymentFormContextBuilder.aPaymentFormContext()
                 .withPaymentFormParameter( paymentFormParameter )
-                .withSensitivePaymentFormParameter( new HashMap<>() )
+                .withSensitivePaymentFormParameter( SensitivePaymentFormParameter )
                 .build();
     }
 }

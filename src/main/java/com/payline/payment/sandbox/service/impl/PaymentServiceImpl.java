@@ -53,7 +53,15 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                         .entrySet().stream()
                         .map(e -> e.getKey() + "=" + e.getValue())
                         .collect(Collectors.joining( "&" ));
+
+                transactionAdditionalData = transactionAdditionalData + "&" + paymentRequest.getPaymentFormContext().getSensitivePaymentFormParameter()
+                        .entrySet().stream()
+                        .map(e -> e.getKey() + "=" + e.getValue())
+                        .collect(Collectors.joining( "&" ));
+
+
                 builder.withTransactionAdditionalData( transactionAdditionalData );
+
             }
 
             return builder.build();
@@ -106,6 +114,9 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         /* PaymentResponseFormUpdated */
         // TODO : PAYLAPMEXT-207
+        if( "10300".equals( amount ) ){
+
+        }
 
         /* PaymentResponseDoPayment */
         if( "10400".equals( amount ) ){

@@ -36,13 +36,25 @@ class TransactionManagerServiceImplTest {
         // Check if the additionalData are eguals
         Boolean isEqualTest = true;
 
+        // For each entry readed in the transactionAdditionalData
         for (Map.Entry<String, String> entry : readedAdditionalData.entrySet()){
+            // If the parameters contain the current entry
             if(MockUtils.aPaymentFormContextWithParameter().getPaymentFormParameter().containsKey(entry.getKey())){
+                // If the value of the current entry is not the same in the parameters as in the response
                 if(!MockUtils.aPaymentFormContextWithParameter().getPaymentFormParameter().get((entry.getKey())).equals((entry.getValue()))){
                     isEqualTest = false;
                 }
             }else{
-                isEqualTest = false;
+                // If the sensitive parameters contain the current entry
+                if(MockUtils.aPaymentFormContextWithParameter().getSensitivePaymentFormParameter().containsKey(entry.getKey())) {
+                    // If the value of the current entry is not the same in the sensitive parameters as in the response
+                    if (!MockUtils.aPaymentFormContextWithParameter().getSensitivePaymentFormParameter().get((entry.getKey())).equals((entry.getValue()))) {
+                        isEqualTest = false;
+                    }
+                }else {
+                    // If the parameters and the sensitive parameters don't contain the current entry
+                    isEqualTest = false;
+                }
             }
         }
 

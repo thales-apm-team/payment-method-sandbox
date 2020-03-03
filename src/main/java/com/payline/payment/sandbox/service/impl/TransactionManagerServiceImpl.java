@@ -11,8 +11,6 @@ public class TransactionManagerServiceImpl implements TransactionManagerService 
 
     @Override
     public Map<String, String> readAdditionalData(String s, String s1) {
-        // TODO: PAYLAPMEXT-206
-
         Map<String, String> query_pairs = new HashMap<String, String>();
 
         String[] pairs = s.split("&");
