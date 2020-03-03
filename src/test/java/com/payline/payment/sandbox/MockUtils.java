@@ -281,4 +281,17 @@ public class MockUtils {
     public static String aUserAgent(){
         return "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0";
     }
+
+    public static PaymentFormContext aPaymentFormContextWithParameter() {
+        Map<String, String> paymentFormParameter = new HashMap<>();
+
+        paymentFormParameter.put("Key1", "Value1");
+        paymentFormParameter.put("Key2", "Value2");
+        paymentFormParameter.put("Key3", "Value3");
+
+        return PaymentFormContext.PaymentFormContextBuilder.aPaymentFormContext()
+                .withPaymentFormParameter( paymentFormParameter )
+                .withSensitivePaymentFormParameter( new HashMap<>() )
+                .build();
+    }
 }
