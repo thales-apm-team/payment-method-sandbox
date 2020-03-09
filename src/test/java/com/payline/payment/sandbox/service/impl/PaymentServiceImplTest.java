@@ -59,5 +59,25 @@ class PaymentServiceImplTest {
         // then: the response is a success
         assertEquals( PaymentResponseSuccess.class, response.getClass() );
     }
+    /**
+     * This test case ensures that, when an amount starting with any other value than 1 or 2 is given,
+     * the method returns a PaymentResponseSuccess.
+     */
+    @Test
+    void paymentRequest_PaymentResponseFormUpdated(){
+        // given: the payment request containing the magic amount
+        PaymentRequest request = MockUtils.aPaylinePaymentRequestBuilder()
+                .withAmount(
+                        new Amount( new BigInteger(  "10300"), Currency.getInstance("EUR") )
+                )
+                .build();
+
+        // when: calling the method paymentRequest
+        PaymentResponse response = service.paymentRequest( request );
+        response = service.paymentRequest( request );
+
+        // then: the response is a success
+        assertEquals( PaymentResponseSuccess.class, response.getClass() );
+    }
 
 }

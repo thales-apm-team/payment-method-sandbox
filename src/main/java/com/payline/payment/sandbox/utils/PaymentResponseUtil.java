@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.utils;
 
+import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.common.OnHoldCause;
 import com.payline.pmapi.bean.payment.response.PaymentData3DS;
@@ -13,8 +14,20 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseDoPayment;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
+import com.payline.pmapi.bean.paymentform.bean.field.*;
+import com.payline.pmapi.bean.paymentform.bean.field.specific.*;
+import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
+import com.payline.pmapi.bean.paymentform.bean.scheme.CommonScheme;
+import com.payline.pmapi.bean.paymentform.bean.scheme.Scheme;
 
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class PaymentResponseUtil {
 
@@ -162,6 +175,175 @@ public class PaymentResponseUtil {
                 .withPartnerTransactionId( PARTNER_TRANSACTION_ID )
                 .withTransactionDetails( new EmptyTransactionDetails() )
                 .build();
+    }
+
+    /**
+     * @returnt a PaymentResponseFormUpdated initialised with all possible parameters
+     */
+    public static CustomForm aCustomForm() throws MalformedURLException {
+
+        List<PaymentFormField> customFields = new ArrayList<>();
+
+        // Add a PaymentFormDisplayFieldIFrame
+        customFields.add(PaymentFormDisplayFieldIFrame.PaymentFormDisplayFieldIFrameBuilder.aPaymentFormDisplayFieldIFrame()
+                .withHeight(100)
+                .withSrc(new URL("https://www.google.com"))
+                .withWidth(100)
+                .build()
+        );
+
+        // Add PaymentFormDisplayFieldLink
+        customFields.add(PaymentFormDisplayFieldLink.PaymentFormDisplayFieldLinkBuilder.aPaymentFormDisplayFieldLink()
+                .withName("Nom")
+                .withTitle("Titre")
+                .withUrl(new URL("https://www.google.com"))
+                .build());
+
+        // Add PaymentFormDisplayFieldText
+        customFields.add(PaymentFormDisplayFieldText.PaymentFormDisplayFieldTextBuilder.aPaymentFormDisplayFieldText()
+                .withContent("Text")
+                .build());
+
+        // Add PaymentFormInputFieldAmount
+        customFields.add(PaymentFormInputFieldAmount.PaymentFormInputFieldAmountBuilder.aPaymentFormInputFieldAmount()
+                .withKey("Key1")
+                .withLabel("Label")
+                .withMaxAmount(new Amount(new BigInteger(  "10000"), Currency.getInstance("EUR")))
+                .withMinAmount(new Amount(new BigInteger(  "10400"), Currency.getInstance("EUR")))
+                .withRequired(true)
+                .withValue("Value1")
+                .withDisabled(false)
+                .withRequiredErrorMessage("Required Error Message")
+                .withSecured(true)
+                .withValidationErrorMessage("Validation Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldBic
+        customFields.add(PaymentFormInputFieldBic.PaymentFormFieldBicBuilder.aPaymentFormFieldBic()
+                .withDisabled(false)
+                .withKey("Key2")
+                .withLabel("Label2")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldBirthdate
+        customFields.add(PaymentFormInputFieldBirthdate.BirthDateFieldBuilder.aBirthDateField()
+                .withDisabled(false)
+                .withKey("Key3")
+                .withLabel("Label3")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldCardNumber
+        List<Scheme> schemes = new ArrayList<>();
+        Scheme scheme = new CommonScheme();
+        schemes.add(scheme);
+
+        customFields.add(PaymentFormInputFieldCardNumber.CardNumberFieldBuilder.aCardNumberField()
+                .withDisabled(false)
+                .withKey("Key4")
+                .withLabel("Label4")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .withSchemes(schemes)
+                .build());
+
+        // Add PaymentFormInputFieldCardholder
+        customFields.add(PaymentFormInputFieldCardholder.CardHolderFieldBuilder.aCardHolderField()
+                .withDisabled(false)
+                .withKey("Key5")
+                .withLabel("Label5")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldCheckbox
+        customFields.add(PaymentFormInputFieldCheckbox.PaymentFormFieldCheckboxBuilder.aPaymentFormFieldCheckbox()
+                .withDisabled(false)
+                .withKey("Key6")
+                .withLabel("Label6")
+                .withPrechecked(false)
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .withSecured(true)
+                .build());
+
+        // Add PaymentFormInputFieldCvx
+        customFields.add(PaymentFormInputFieldCvx.CvxFieldBuilder.aCvxField()
+                .withDisabled(false)
+                .withKey("Key7")
+                .withLabel("Label7")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldExpirationDate
+        customFields.add(PaymentFormInputFieldExpirationDate.ExpirationDateFieldBuilder.anExpirationDateField()
+                .withDisabled(false)
+                .withKey("Key8")
+                .withLabel("Label8")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldIban
+        customFields.add(PaymentFormInputFieldIban.IbanFieldBuilder.anIbanField()
+                .withDisabled(false)
+                .withKey("Key9")
+                .withLabel("Label9")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldSelect
+        List<SelectOption> selectOptions = new ArrayList<>();
+        selectOptions.add(SelectOption.SelectOptionBuilder.aSelectOption()
+                .withKey("Key10")
+                .withValue("Value10")
+                .build());
+
+        customFields.add(PaymentFormInputFieldSelect.PaymentFormFieldSelectBuilder.aPaymentFormInputFieldSelect()
+                .withDisabled(false)
+                .withIsFilterable(false)
+                .withKey("Key11")
+                .withLabel("Label11")
+                .withPlaceholder("PlaceHolder")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .withSecured(true)
+                .withSelectOptions(selectOptions)
+                .withValidationErrorMessage("Validation Error Message")
+                .build());
+
+        // Add PaymentFormInputFieldText
+        Pattern validation = Pattern.compile("Test");
+
+        customFields.add(PaymentFormInputFieldText.PaymentFormFieldTextBuilder.aPaymentFormFieldText()
+                .withDisabled(false)
+                .withFieldIcon(FieldIcon.ENVELOPE)
+                .withInputType(InputType.EMAIL)
+                .withKey("Key12")
+                .withLabel("Label12")
+                .withPlaceholder("PlaceHolder")
+                .withRequired(true)
+                .withRequiredErrorMessage("Required Error Message")
+                .withSecured(true)
+                .withValidation(validation)
+                .withValidationErrorMessage("Validation Error Message")
+                .withValue("Value12")
+                .build());
+
+        // Create the custom form
+        CustomForm customForm = CustomForm.builder()
+                .withDescription("")
+                .withCustomFields(customFields)
+                .withButtonText("Button")
+                .withDisplayButton(true)
+                .build();
+        return customForm;
+
     }
 
 }
