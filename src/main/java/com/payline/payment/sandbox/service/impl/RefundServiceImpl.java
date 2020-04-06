@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -20,9 +21,11 @@ public class RefundServiceImpl extends AbstractService<RefundResponse> implement
         switch( amount ){
             /* ResetResponseSuccess */
             case "70000":
+                Logger.log(this.getClass().getSimpleName(),"refundRequest", amount, "RefundResponseSuccess");
                 return RefundResponseSuccess.RefundResponseSuccessBuilder.aRefundResponseSuccess()
                         .build();
             case "70001":
+                Logger.log(this.getClass().getSimpleName(),"refundRequest", amount, "RefundResponseSuccess avec partnerTransactionId & statusCode");
                 return RefundResponseSuccess.RefundResponseSuccessBuilder.aRefundResponseSuccess()
                         .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
                         .withStatusCode("STATUS")
@@ -30,9 +33,11 @@ public class RefundServiceImpl extends AbstractService<RefundResponse> implement
 
             /* ResetResponseFailure */
             case "70100":
+                Logger.log(this.getClass().getSimpleName(),"refundRequest", amount, "RefundResponseFailure");
                 return RefundResponseFailure.RefundResponseFailureBuilder.aRefundResponseFailure()
                         .build();
             case "70101":
+                Logger.log(this.getClass().getSimpleName(),"refundRequest", amount, "RefundResponseFailure avec failureCause(REFUSED) & errorCode & partnerTransactionId");
                 return RefundResponseFailure.RefundResponseFailureBuilder.aRefundResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause(FailureCause.REFUSED)
@@ -40,7 +45,7 @@ public class RefundServiceImpl extends AbstractService<RefundResponse> implement
                         .build();
 
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),"refundRequest", amount );
         }
     }
 

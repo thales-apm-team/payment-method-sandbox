@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
@@ -14,7 +15,7 @@ public class PaymentWithRedirectionServiceImpl extends AbstractService<PaymentRe
         this.verifyRequest(redirectionPaymentRequest);
 
         String amount = redirectionPaymentRequest.getAmount().getAmountInSmallestUnit().toString();
-        return this.process(amount);
+        return this.process("finalizeRedirectionPayment",amount);
     }
 
     @Override
@@ -22,7 +23,7 @@ public class PaymentWithRedirectionServiceImpl extends AbstractService<PaymentRe
         this.verifyRequest(transactionStatusRequest);
 
         String amount = transactionStatusRequest.getAmount().getAmountInSmallestUnit().toString();
-        return this.process(amount);
+        return this.process("handleSessionExpired",amount);
     }
 
     /**
@@ -59,44 +60,55 @@ public class PaymentWithRedirectionServiceImpl extends AbstractService<PaymentRe
         }
     }
 
-    private PaymentResponse process( String amount ){
+    private PaymentResponse process(String method, String amount ){
         // retrieve the last 3 digits of the amount, which identify the response type
         String amountLastDigits = amount.substring(2);
 
         switch( amountLastDigits ){
             /* PaymentResponseSuccess */
             case "000":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseSuccess avec partnerTransactionId & transactionDetails(EmptyTransactionDetails)");
                 return PaymentResponseUtil.successMinimal();
             case "001":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseSuccess avec partnerTransactionId & transactionDetails(EmptyTransactionDetails) & transactionAdditionalData");
                 return PaymentResponseUtil.successAdditionalData();
             case "002":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseSuccess avec partnerTransactionId & transactionDetails(BankTransfert)");
                 return PaymentResponseUtil.successBankTransferDetails();
             case "003":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseSuccess avec partnerTransactionId & transactionDetails(Email)");
                 return PaymentResponseUtil.successEmailDetails();
 
             /* PaymentResponseFailure */
             case "100":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (<= 50 caractères)");
                 return PaymentResponseUtil.failureClassic();
             case "101":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA)");
                 return PaymentResponseUtil.failureMinimal();
             case "102":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (> 50 caractères)");
                 return PaymentResponseUtil.failureLongErrorCode();
             case "103":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode & partnerTransactionId");
                 return PaymentResponseUtil.failureWithPartnerTransactionId();
 
             /* PaymentResponseOnHold */
             case "200":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseOnHold avec onHoldCause(SCORING_ASYNC)) & partnerTransactionId");
                 return PaymentResponseUtil.onHoldMinimalScoringAsync();
             case "201":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseOnHold avec onHoldCause(ASYNC_RETRY)) & partnerTransactionId");
                 return PaymentResponseUtil.onHoldMinimalAsyncRetry();
 
             /* PaymentResponseDoPayment */
             case "300":
+                Logger.log(this.getClass().getSimpleName(),method, amount, "PaymentResponseDoPayment avec partnerTransactionId & paymentMode");
                 return PaymentResponseUtil.doPaymentMinimal();
 
             /* Generic plugin behaviours */
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),method,  amount );
         }
     }
 

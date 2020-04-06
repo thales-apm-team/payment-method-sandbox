@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.capture.request.CaptureRequest;
@@ -20,9 +21,11 @@ public class CaptureServiceImpl extends AbstractService<CaptureResponse> impleme
         switch( amount ){
             /* CaptureResponseSuccess */
             case "50000":
+                Logger.log(this.getClass().getSimpleName(),"captureRequest", amount, "CaptureResponseSuccess");
                 return CaptureResponseSuccess.CaptureResponseSuccessBuilder.aCaptureResponseSuccess()
                         .build();
             case "50001":
+                Logger.log(this.getClass().getSimpleName(),"captureRequest", amount, "CaptureResponseSuccess avec partnerTransactionId & statusCode");
                 return CaptureResponseSuccess.CaptureResponseSuccessBuilder.aCaptureResponseSuccess()
                         .withPartnerTransactionId( PaymentResponseUtil.PARTNER_TRANSACTION_ID )
                         .withStatusCode("STATUS")
@@ -30,9 +33,11 @@ public class CaptureServiceImpl extends AbstractService<CaptureResponse> impleme
 
             /* CaptureResponseFailure */
             case "50100":
+                Logger.log(this.getClass().getSimpleName(),"captureRequest", amount, "CaptureResponseFailure");
                 return CaptureResponseFailure.CaptureResponseFailureBuilder.aCaptureResponseFailure()
                         .build();
             case "50101":
+                Logger.log(this.getClass().getSimpleName(),"captureRequest", amount, "CaptureResponseFailure avec failureCause(REFUSED) & errorCode & partnerTransactionId");
                 return CaptureResponseFailure.CaptureResponseFailureBuilder.aCaptureResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause(FailureCause.REFUSED)
@@ -41,7 +46,7 @@ public class CaptureServiceImpl extends AbstractService<CaptureResponse> impleme
 
             /* Generic plugin behaviours */
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),"captureRequest", amount );
         }
     }
 

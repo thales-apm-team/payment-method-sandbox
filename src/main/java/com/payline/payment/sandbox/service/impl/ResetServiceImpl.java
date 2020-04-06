@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -20,9 +21,11 @@ public class ResetServiceImpl extends AbstractService<ResetResponse> implements 
         switch( amount ){
             /* ResetResponseSuccess */
             case "60000":
+                Logger.log(this.getClass().getSimpleName(),"resetRequest", amount, "ResetResponseSuccess");
                 return ResetResponseSuccess.ResetResponseSuccessBuilder.aResetResponseSuccess()
                         .build();
             case "60001":
+                Logger.log(this.getClass().getSimpleName(),"resetRequest", amount, "ResetResponseSuccess avec partnerTransactionId & statusCode");
                 return ResetResponseSuccess.ResetResponseSuccessBuilder.aResetResponseSuccess()
                         .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
                         .withStatusCode("STATUS")
@@ -30,9 +33,11 @@ public class ResetServiceImpl extends AbstractService<ResetResponse> implements 
 
             /* ResetResponseFailure */
             case "60100":
+                Logger.log(this.getClass().getSimpleName(),"resetRequest", amount, "ResetResponseFailure");
                 return ResetResponseFailure.ResetResponseFailureBuilder.aResetResponseFailure()
                         .build();
             case "60101":
+                Logger.log(this.getClass().getSimpleName(),"resetRequest", amount, "ResetResponseFailure avec failureCause(REFUSED) & errorCode & partnerTransactionId");
                 return ResetResponseFailure.ResetResponseFailureBuilder.aResetResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause(FailureCause.REFUSED)
@@ -40,7 +45,7 @@ public class ResetServiceImpl extends AbstractService<ResetResponse> implements 
                         .build();
 
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),"resetRequest", amount );
         }
     }
 

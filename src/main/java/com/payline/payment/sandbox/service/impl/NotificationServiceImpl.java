@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.common.*;
@@ -34,24 +35,29 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
         switch( amount ){
             /* IgnoreNotificationResponse */
             case "40000":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "IgnoreNotificationResponse");
                 return new IgnoreNotificationResponse();
             case "40001":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "IgnoreNotificationResponse avec httpStatus");
                 return IgnoreNotificationResponse.IgnoreNotificationResponseBuilder.aIgnoreNotificationResponseBuilder()
                         .withHttpStatus( 204 )
                         .build();
 
             /* PaymentResponseByNotificationResponse */
             case "40100":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "PaymentResponseByNotificationResponse avec PaymentResponseSuccess");
                 return PaymentResponseByNotificationResponse.PaymentResponseByNotificationResponseBuilder.aPaymentResponseByNotificationResponseBuilder()
                         .withPaymentResponse( PaymentResponseUtil.successMinimal() )
                         .withTransactionCorrelationId( transactionCorrelationId )
                         .build();
             case "40101":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "PaymentResponseByNotificationResponse avec PAymentResponseFailure");
                 return PaymentResponseByNotificationResponse.PaymentResponseByNotificationResponseBuilder.aPaymentResponseByNotificationResponseBuilder()
                         .withPaymentResponse( PaymentResponseUtil.failureClassic() )
                         .withTransactionCorrelationId( transactionCorrelationId )
                         .build();
             case "40102":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "PaymentResponseByNotificationResponse avec PaymentReponseOnHold");
                 return PaymentResponseByNotificationResponse.PaymentResponseByNotificationResponseBuilder.aPaymentResponseByNotificationResponseBuilder()
                         .withPaymentResponse( PaymentResponseUtil.onHoldMinimalScoringAsync() )
                         .withTransactionCorrelationId( transactionCorrelationId )
@@ -59,13 +65,16 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
 
             /* TransactionStateChangedResponse */
             case "40200":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "TransactionStateChangedResponse");
                 return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                         .build();
             case "40201":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "TransactionStateChangedResponse avec SuccessTransactionStatus");
                 return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                         .withTransactionStatus( SuccessTransactionStatus.builder().build() )
                         .build();
             case "40202":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "TransactionStateChangedResponse avec FailureTransactionStatus");
                 return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                         .withTransactionStatus(
                                 FailureTransactionStatus.builder()
@@ -74,6 +83,7 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
                         )
                         .build();
             case "40203":
+                Logger.log(this.getClass().getSimpleName(),"notificationRequest", amount, "TransactionStateChangedResponse avec OnHoldTransactionStatus");
                 return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                         .withTransactionStatus(
                                 OnHoldTransactionStatus.builder()
@@ -84,7 +94,7 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
 
             /* Generic plugin errors */
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),"notificationRequest", amount );
         }
     }
 
