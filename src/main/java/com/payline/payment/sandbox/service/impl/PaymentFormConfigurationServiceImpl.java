@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -55,8 +56,10 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
         switch( amount ){
             /* PaymentFormConfigurationResponseSpecific */
             case "30000":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific NoField");
                 return noFieldResponse;
             case "30001":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific BankTransferForm");
                 // retrieve the banks list from PluginConfiguration
                 if( paymentFormConfigurationRequest.getPluginConfiguration() == null ){
                     throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
@@ -85,21 +88,25 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .build();
 
             case "30002":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific Complet");
                 // TODO: exhaustive CustomForm which includes all the possible fields ! (PAYLAPMEXT-209)
                 return noFieldResponse;
 
             /* PaymentFormConfigurationResponseFailure */
             case "30100":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères)");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
                         .build();
             case "30101":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (> 50 caractères)");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("This error code has not been truncated and is more than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
                         .build();
             case "30102":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères) & partnerTransactionId");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
@@ -108,13 +115,14 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
 
             /* PaymentFormConfigurationResponseProvided */
             case "30200":
+                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseProvided");
                 return PaymentFormConfigurationResponseProvided.PaymentFormConfigurationResponseBuilder.aPaymentFormConfigurationResponse()
                         .withContextPaymentForm( new HashMap<>() )
                         .build();
 
             /* Generic plugin errors */
             default:
-                return super.generic( amount );
+                return super.generic(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount );
         }
     }
 
