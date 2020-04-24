@@ -17,6 +17,8 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 import com.payline.pmapi.bean.paymentform.bean.field.*;
 import com.payline.pmapi.bean.paymentform.bean.field.specific.*;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
+import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
+import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.*;
 import com.payline.pmapi.bean.paymentform.bean.scheme.CommonScheme;
 import com.payline.pmapi.bean.paymentform.bean.scheme.Scheme;
 
@@ -344,6 +346,51 @@ public class PaymentResponseUtil {
                 .build();
         return customForm;
 
+    }
+
+    /** @return a PartnerWidgetForm initialised with all possible parameters */
+    public static PartnerWidgetForm aPartnerWidgetForm() throws MalformedURLException {
+         String SCRIPT_BEFORE_IMPORT ="<script>" +
+                 "console.log(\"Console log Before\");" +
+                 "</script>";
+
+         String SCRIPT_AFTER_IMPORT ="<script>" +
+                 "console.log(\"Console log after\");" +
+                 "</script>";
+
+
+        // script to import
+        PartnerWidgetScriptImport scriptImport = PartnerWidgetScriptImport.WidgetPartnerScriptImportBuilder
+                .aWidgetPartnerScriptImport()
+                .withUrl(new URL("https://www.payline.com"))
+                .withCache(true)
+                .withAsync(true)
+                .build();
+
+        // div that contains the script to load
+        PartnerWidgetContainer container = PartnerWidgetContainerTargetDivId.WidgetPartnerContainerTargetDivIdBuilder
+                .aWidgetPartnerContainerTargetDivId()
+                .withId("SandBoxPaymentForm")
+                .build();
+
+        // method to call when payment is done (in the "onValidated" event)
+        PartnerWidgetOnPay onPay = PartnerWidgetOnPayCallBack.WidgetContainerOnPayCallBackBuilder
+                .aWidgetContainerOnPayCallBack()
+                .withName("paylineProcessPaymentCallback")
+                .build();
+
+        PartnerWidgetForm widgetForm = PartnerWidgetForm.WidgetPartnerFormBuilder
+                .aWidgetPartnerForm()
+                .withDescription("Partner Widget Form Description")
+                .withScriptImport(scriptImport)
+                .withLoadingScriptBeforeImport(SCRIPT_BEFORE_IMPORT)
+                .withLoadingScriptAfterImport(SCRIPT_AFTER_IMPORT)
+                .withContainer(container)
+                .withOnPay(onPay)
+                .withPerformsAutomaticRedirection(true)
+                .build();
+
+         return widgetForm;
     }
 
 }
