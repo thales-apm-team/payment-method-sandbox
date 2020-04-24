@@ -10,10 +10,7 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseActiveWaiting
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFormUpdated;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormField;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormInputFieldCheckbox;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormInputFieldSelect;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormInputFieldText;
+import com.payline.pmapi.bean.paymentform.bean.field.*;
 import com.payline.pmapi.bean.paymentform.bean.field.specific.*;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
@@ -31,12 +28,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
-
-    private CustomForm customForm;
-    private boolean isPaymentFormUpdatedFilled = false;
     /**------------------------------------------------------------------------------------------------------------------*/
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
@@ -44,9 +39,15 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         String amount = paymentRequest.getAmount().getAmountInSmallestUnit().toString();
 
+        Boolean isPaymentFormUpdatedFilled = false;
+        if(!paymentRequest.getRequestContext().getRequestData().isEmpty()){
+            if(paymentRequest.getRequestContext().getRequestData().get("step").equals("2")){
+                isPaymentFormUpdatedFilled = true;
+            }
+        }
+
         /* PaymentResponseSuccess */
-        if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || ("10300".equals(amount) && isPaymentFormUpdatedFilled)) {
-            // TODO: manage the case where the amount is "103XX" and the form has been updated (PAYLAPMEXT-207)
+        if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || ((("10300".equals(amount) ||"10301".equals(amount)) && isPaymentFormUpdatedFilled))) {
             String transactionAdditionalData = new String();
 
             PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
@@ -68,12 +69,6 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                         .map(e -> e.getKey() + "=" + e.getValue())
                         .collect(Collectors.joining("&"));
             }
-            if ("10300".equals(amount) && isPaymentFormUpdatedFilled) {
-                // TODO : Ajouter les éléments du PaymentFormUpdated aux transactionAdditionalData si l'on est dans le cas 10300 et que le formulaire est déjà rempli
-                transactionAdditionalData = transactionAdditionalData + getformatedStringFromCustomFormData();
-                System.out.println(transactionAdditionalData);
-            }
-
 
             builder.withTransactionAdditionalData(transactionAdditionalData);
 
@@ -126,21 +121,18 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
 
         /* PaymentResponseFormUpdated */
-        // TODO : PAYLAPMEXT-207
         if ("10300".equals(amount)) {
             try {
-                this.customForm = PaymentResponseUtil.aCustomForm();
-                this.isPaymentFormUpdatedFilled = true;
-
                 // Create the PaymentFormConfigurationResponse
                 PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
                         .PaymentFormConfigurationResponseSpecificBuilder
                         .aPaymentFormConfigurationResponseSpecific()
-                        .withPaymentForm(customForm)
+                        .withPaymentForm(PaymentResponseUtil.aCustomForm())
+
                         .build();
 
                 Map<String, String> context = new HashMap<>();
-                context.put("key13", "value");
+                context.put("step", "2");
 
                 // Return the PaymentResponseFormUpdated
                 return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
@@ -153,11 +145,35 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
-            //
-
         }
+        /* PaymentResponseFormUpdated */
+        if ("10301".equals(amount)) {
+                // Create the PaymentFormConfigurationResponse
+            PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
+            try {
+                paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
+                        .PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm( PaymentResponseUtil.aPartnerWidgetForm())
+
+                        .build();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
 
 
+            Map<String, String> context = new HashMap<>();
+                context.put("step", "2");
+
+                // Return the PaymentResponseFormUpdated
+                return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
+                        .aPaymentResponseFormUpdated()
+                        .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
+                        .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
+                                .withRequestData(context)
+                                .build())
+                        .build();
+        }
         /* PaymentResponseDoPayment */
         if ("10400".equals(amount)) {
             return PaymentResponseUtil.doPaymentMinimal();
@@ -276,103 +292,6 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         return null;
 
-    }
-    /**------------------------------------------------------------------------------------------------------------------*/
-    /**
-     * Return a formated string with the customForm data
-     * @return
-     */
-    private String getformatedStringFromCustomFormData() {
-
-        String transactionAdditionalData = new String();
-
-        for (PaymentFormField paymentFormField : this.customForm.getCustomFields()) {
-
-            if (!transactionAdditionalData.isEmpty()) {
-                transactionAdditionalData = transactionAdditionalData + "&";
-            }
-
-            // PaymentFormInputFieldAmount
-            if (paymentFormField instanceof PaymentFormInputFieldAmount) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldAmount) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldAmount) paymentFormField).getValue();
-            }
-
-            // PaymentFormInputFieldBic
-            if (paymentFormField instanceof PaymentFormInputFieldBic) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldBic) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldBic) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldBirthdate
-            if (paymentFormField instanceof PaymentFormInputFieldBirthdate) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldBirthdate) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldBirthdate) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldCardNumber
-            if (paymentFormField instanceof PaymentFormInputFieldCardNumber) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldCardNumber) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldCardNumber) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldCardholder
-            if (paymentFormField instanceof PaymentFormInputFieldCardholder) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldCardholder) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldCardholder) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldCheckbox
-            if (paymentFormField instanceof PaymentFormInputFieldCheckbox) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldCheckbox) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldCheckbox) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldCvx
-            if (paymentFormField instanceof PaymentFormInputFieldCvx) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldCvx) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldCvx) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldExpirationDate
-            if (paymentFormField instanceof PaymentFormInputFieldExpirationDate) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldExpirationDate) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldExpirationDate) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldIban
-            if (paymentFormField instanceof PaymentFormInputFieldIban) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldIban) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldIban) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldSelect
-            if (paymentFormField instanceof PaymentFormInputFieldSelect) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldSelect) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldSelect) paymentFormField).getLabel();
-            }
-            // PaymentFormInputFieldText
-            if (paymentFormField instanceof PaymentFormInputFieldText) {
-                transactionAdditionalData = transactionAdditionalData
-                        + ((PaymentFormInputFieldText) paymentFormField).getKey()
-                        + "="
-                        + ((PaymentFormInputFieldText) paymentFormField).getValue();
-            }
-
-        }
-        return transactionAdditionalData;
     }
     /**------------------------------------------------------------------------------------------------------------------*/
 
