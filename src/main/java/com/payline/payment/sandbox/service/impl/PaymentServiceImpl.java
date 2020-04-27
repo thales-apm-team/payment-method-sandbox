@@ -129,59 +129,53 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         /* PaymentResponseFormUpdated */
         if ("10300".equals(amount)) {
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFormUpdated avec un formulaire complet");
-            try {
-                // Create the PaymentFormConfigurationResponse
-                PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
-                        .PaymentFormConfigurationResponseSpecificBuilder
-                        .aPaymentFormConfigurationResponseSpecific()
-                        .withPaymentForm(PaymentResponseUtil.aCustomForm())
+            Logger.log(this.getClass().getSimpleName(), "paymentRequest", amount, "PaymentResponseFormUpdated avec un formulaire complet");
+            // Create the PaymentFormConfigurationResponse
+            PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
+                    .PaymentFormConfigurationResponseSpecificBuilder
+                    .aPaymentFormConfigurationResponseSpecific()
+                    .withPaymentForm(PaymentResponseUtil.aCustomForm())
 
-                        .build();
+                    .build();
 
-                Map<String, String> context = new HashMap<>();
-                context.put("step", "2");
+            Map<String, String> context = new HashMap<>();
+            context.put("step", "2");
 
-                // Return the PaymentResponseFormUpdated
-                return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
-                        .aPaymentResponseFormUpdated()
-                        .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
-                        .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
-                                .withRequestData(context)
-                                .build())
-                        .build();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            // Return the PaymentResponseFormUpdated
+            return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
+                    .aPaymentResponseFormUpdated()
+                    .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
+                    .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
+                            .withRequestData(context)
+                            .build())
+                    .build();
+
         }
         /* PaymentResponseFormUpdated */
         if ("10301".equals(amount)) {
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFormUpdated avec un PartnerWidgetForm");
-                // Create the PaymentFormConfigurationResponse
+            Logger.log(this.getClass().getSimpleName(), "paymentRequest", amount, "PaymentResponseFormUpdated avec un PartnerWidgetForm");
+            // Create the PaymentFormConfigurationResponse
             PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
-            try {
-                paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
-                        .PaymentFormConfigurationResponseSpecificBuilder
-                        .aPaymentFormConfigurationResponseSpecific()
-                        .withPaymentForm( PaymentResponseUtil.aPartnerWidgetForm())
 
-                        .build();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
+                    .PaymentFormConfigurationResponseSpecificBuilder
+                    .aPaymentFormConfigurationResponseSpecific()
+                    .withPaymentForm(PaymentResponseUtil.aPartnerWidgetForm())
+
+                    .build();
 
 
             Map<String, String> context = new HashMap<>();
-                context.put("step", "2");
+            context.put("step", "2");
 
-                // Return the PaymentResponseFormUpdated
-                return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
-                        .aPaymentResponseFormUpdated()
-                        .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
-                        .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
-                                .withRequestData(context)
-                                .build())
-                        .build();
+            // Return the PaymentResponseFormUpdated
+            return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
+                    .aPaymentResponseFormUpdated()
+                    .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
+                    .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
+                            .withRequestData(context)
+                            .build())
+                    .build();
         }
         /* PaymentResponseDoPayment */
         if( "10400".equals( amount ) ){
@@ -214,96 +208,6 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
     }
 
-    /**------------------------------------------------------------------------------------------------------------------*/
-    /**
-     * @param paymentRequest
-     * @return
-     */
-    // TODO: remove (lors du traitement du ticket PAYLAPMEXT-207)
-    private PaymentResponse processRequestWithPaymentResponseFormUpdated(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
-
-        if (new BigInteger("10003").equals(amount)) {
-
-            PartnerWidgetScriptImport scriptImport = null;
-
-            try {
-
-                scriptImport = PartnerWidgetScriptImport.WidgetPartnerScriptImportBuilder
-                        .aWidgetPartnerScriptImport()
-                        .withUrl(new URL("https://www.google.com"))
-                        .withCache(true)
-                        .withAsync(true)
-                        .build();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            PartnerWidgetOnPay onPay = PartnerWidgetOnPayCallBack.WidgetContainerOnPayCallBackBuilder
-                    .aWidgetContainerOnPayCallBack()
-                    .withName("notUsedButMandatory")
-                    .build();
-
-            PartnerWidgetForm paymentForm = PartnerWidgetForm.WidgetPartnerFormBuilder.aWidgetPartnerForm()
-                    .withDescription("")
-                    .withScriptImport(scriptImport)
-                    .withOnPay(onPay)
-                    .build();
-
-            paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder
-                    .aPaymentFormConfigurationResponseSpecific()
-                    .withPaymentForm(paymentForm)
-                    .build();
-
-            return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
-                    .aPaymentResponseFormUpdated()
-                    .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
-                    .build();
-
-        }
-
-        if (new BigInteger("10004").equals(amount)) {
-
-            List<PaymentFormField> customFields = new ArrayList<>();
-
-            CustomForm customForm = CustomForm.builder()
-                    .withDescription("")
-                    .withCustomFields(customFields)
-                    .withButtonText("Button")
-                    .withDisplayButton(true)
-                    .build();
-
-            paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
-                    .PaymentFormConfigurationResponseSpecificBuilder
-                    .aPaymentFormConfigurationResponseSpecific()
-                    .withPaymentForm(customForm)
-                    .build();
-
-            Map<String, String> requestContextMap = new HashMap<>();
-            Map<String, String> requestSensitiveContext = paymentRequest.getRequestContext().getSensitiveRequestData();
-
-            RequestContext requestContext = RequestContext
-                    .RequestContextBuilder
-                    .aRequestContext()
-                    .withRequestData(requestContextMap)
-                    .withSensitiveRequestData(requestSensitiveContext)
-                    .build();
-
-            return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
-                    .aPaymentResponseFormUpdated()
-                    .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
-                    .withRequestContext(requestContext)
-                    .build();
-
-        }
-
-        return null;
-
-    }
     /**------------------------------------------------------------------------------------------------------------------*/
 
 }

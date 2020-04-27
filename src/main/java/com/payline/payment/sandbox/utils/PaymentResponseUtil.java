@@ -182,24 +182,32 @@ public class PaymentResponseUtil {
     /**
      * @returnt a PaymentResponseFormUpdated initialised with all possible parameters
      */
-    public static CustomForm aCustomForm() throws MalformedURLException {
+    public static CustomForm aCustomForm() {
 
         List<PaymentFormField> customFields = new ArrayList<>();
 
         // Add a PaymentFormDisplayFieldIFrame
-        customFields.add(PaymentFormDisplayFieldIFrame.PaymentFormDisplayFieldIFrameBuilder.aPaymentFormDisplayFieldIFrame()
-                .withHeight(100)
-                .withSrc(new URL("https://www.google.com"))
-                .withWidth(100)
-                .build()
-        );
+        try {
+            customFields.add(PaymentFormDisplayFieldIFrame.PaymentFormDisplayFieldIFrameBuilder.aPaymentFormDisplayFieldIFrame()
+                    .withHeight(100)
+                    .withSrc(new URL("https://www.google.com"))
+                    .withWidth(100)
+                    .build()
+            );
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
 
         // Add PaymentFormDisplayFieldLink
-        customFields.add(PaymentFormDisplayFieldLink.PaymentFormDisplayFieldLinkBuilder.aPaymentFormDisplayFieldLink()
-                .withName("Nom")
-                .withTitle("Titre")
-                .withUrl(new URL("https://www.google.com"))
-                .build());
+        try {
+            customFields.add(PaymentFormDisplayFieldLink.PaymentFormDisplayFieldLinkBuilder.aPaymentFormDisplayFieldLink()
+                    .withName("Nom")
+                    .withTitle("Titre")
+                    .withUrl(new URL("https://www.google.com"))
+                    .build());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
 
         // Add PaymentFormDisplayFieldText
         customFields.add(PaymentFormDisplayFieldText.PaymentFormDisplayFieldTextBuilder.aPaymentFormDisplayFieldText()
@@ -349,7 +357,7 @@ public class PaymentResponseUtil {
     }
 
     /** @return a PartnerWidgetForm initialised with all possible parameters */
-    public static PartnerWidgetForm aPartnerWidgetForm() throws MalformedURLException {
+    public static PartnerWidgetForm aPartnerWidgetForm() {
          String SCRIPT_BEFORE_IMPORT ="<script>" +
                  "console.log(\"Console log Before\");" +
                  "</script>";
@@ -360,12 +368,17 @@ public class PaymentResponseUtil {
 
 
         // script to import
-        PartnerWidgetScriptImport scriptImport = PartnerWidgetScriptImport.WidgetPartnerScriptImportBuilder
-                .aWidgetPartnerScriptImport()
-                .withUrl(new URL("https://www.payline.com"))
-                .withCache(true)
-                .withAsync(true)
-                .build();
+        PartnerWidgetScriptImport scriptImport = null;
+        try {
+            scriptImport = PartnerWidgetScriptImport.WidgetPartnerScriptImportBuilder
+                    .aWidgetPartnerScriptImport()
+                    .withUrl(new URL("https://www.payline.com"))
+                    .withCache(true)
+                    .withAsync(true)
+                    .build();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
 
         // div that contains the script to load
         PartnerWidgetContainer container = PartnerWidgetContainerTargetDivId.WidgetPartnerContainerTargetDivIdBuilder
