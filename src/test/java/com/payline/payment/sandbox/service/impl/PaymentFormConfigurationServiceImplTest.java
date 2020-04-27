@@ -3,7 +3,9 @@ package com.payline.payment.sandbox.service.impl;
 import com.payline.payment.sandbox.MockUtils;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.paymentform.bean.form.BankTransferForm;
+import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.NoFieldForm;
+import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
@@ -70,4 +72,43 @@ class PaymentFormConfigurationServiceImplTest {
         assertEquals( "bank name 2", form.getBanks().get(1).getValue() );
     }
 
+    /**
+     *
+     */
+    @Test
+    void getPaymentFormConfiguration_CustomForm() {
+        // given: the request containing the magic amount
+        PaymentFormConfigurationRequest request = MockUtils.aPaymentFormConfigurationRequestBuilder()
+                .withAmount(
+                        new Amount(new BigInteger("30002"), Currency.getInstance("EUR"))
+                )
+                .build();
+
+        // when: calling the method paymentRequest
+        PaymentFormConfigurationResponse response = service.getPaymentFormConfiguration(request);
+
+        // then: the response is a success
+        assertEquals(PaymentFormConfigurationResponseSpecific.class, response.getClass());
+        assertEquals(CustomForm.class, ((PaymentFormConfigurationResponseSpecific) response).getPaymentForm().getClass());
+    }
+
+    /**
+     *
+     */
+    @Test
+    void getPaymentFormConfiguration_PartnerWidgetForm() {
+        // given: the request containing the magic amount
+        PaymentFormConfigurationRequest request = MockUtils.aPaymentFormConfigurationRequestBuilder()
+                .withAmount(
+                        new Amount(new BigInteger("30003"), Currency.getInstance("EUR"))
+                )
+                .build();
+
+        // when: calling the method paymentRequest
+        PaymentFormConfigurationResponse response = service.getPaymentFormConfiguration(request);
+
+        // then: the response is a success
+        assertEquals(PaymentFormConfigurationResponseSpecific.class, response.getClass());
+        assertEquals(PartnerWidgetForm.class, ((PaymentFormConfigurationResponseSpecific) response).getPaymentForm().getClass());
+    }
 }

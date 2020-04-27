@@ -9,6 +9,7 @@ import com.payline.pmapi.bean.paymentform.bean.field.SelectOption;
 import com.payline.pmapi.bean.paymentform.bean.form.BankTransferForm;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.NoFieldForm;
+import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormLogoRequest;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
@@ -88,9 +89,25 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .build();
 
             case "30002":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific Complet");
-                // TODO: exhaustive CustomForm which includes all the possible fields ! (PAYLAPMEXT-209)
-                return noFieldResponse;
+                Logger.log(this.getClass().getSimpleName(), "getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific avec un CustomForm complet");
+
+                // Build form
+                CustomForm customForm = PaymentResponseUtil.aCustomForm();
+
+                return PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm(customForm)
+                        .build();
+            case "30003":
+                Logger.log(this.getClass().getSimpleName(), "getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific avec un PartnerWidgetForm complet");
+
+                // Build form
+                PartnerWidgetForm partnerWidgetForm = PaymentResponseUtil.aPartnerWidgetForm();
+
+                return PaymentFormConfigurationResponseSpecific.PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm(partnerWidgetForm)
+                        .build();
 
             /* PaymentFormConfigurationResponseFailure */
             case "30100":
