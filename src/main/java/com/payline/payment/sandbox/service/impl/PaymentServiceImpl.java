@@ -11,8 +11,7 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseActiveWaiting
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFormUpdated;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
-import com.payline.pmapi.bean.paymentform.bean.field.*;
-import com.payline.pmapi.bean.paymentform.bean.field.specific.*;
+import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormField;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
 import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.PartnerWidgetOnPay;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
@@ -50,6 +48,8 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         /* PaymentResponseSuccess */
         if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || ((("10300".equals(amount) ||"10301".equals(amount)) && isPaymentFormUpdatedFilled))) {
             String transactionAdditionalData = new String();
+
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseSuccess minimale");
 
             PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
                     .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
@@ -129,6 +129,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         /* PaymentResponseFormUpdated */
         if ("10300".equals(amount)) {
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFormUpdated avec un formulaire complet");
             try {
                 // Create the PaymentFormConfigurationResponse
                 PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
@@ -155,6 +156,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
         /* PaymentResponseFormUpdated */
         if ("10301".equals(amount)) {
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFormUpdated avec un PartnerWidgetForm");
                 // Create the PaymentFormConfigurationResponse
             PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
             try {
