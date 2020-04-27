@@ -1,18 +1,18 @@
 package com.payline.payment.sandbox.service.impl;
 
-import com.payline.payment.sandbox.utils.MagicAmountEnumValue;
-import com.payline.pmapi.bean.common.FailureCause;
-import com.payline.pmapi.bean.common.Message;
+import com.payline.payment.sandbox.utils.Logger;
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
+import com.payline.payment.sandbox.utils.service.AbstractService;
 import com.payline.pmapi.bean.payment.RequestContext;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
-import com.payline.pmapi.bean.payment.response.PaymentData3DS;
-import com.payline.pmapi.bean.payment.response.PaymentModeCard;
 import com.payline.pmapi.bean.payment.response.PaymentResponse;
-import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.BankAccount;
-import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.Card;
-import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.BankTransfer;
-import com.payline.pmapi.bean.payment.response.impl.*;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormField;
+import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.EmptyTransactionDetails;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseActiveWaiting;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFormUpdated;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
+import com.payline.pmapi.bean.paymentform.bean.field.*;
+import com.payline.pmapi.bean.paymentform.bean.field.specific.*;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
 import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.PartnerWidgetOnPay;
@@ -25,179 +25,199 @@ import com.payline.pmapi.service.PaymentService;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static com.payline.pmapi.bean.common.Message.MessageType.SUCCESS;
-
-public class PaymentServiceImpl extends AbstractService implements PaymentService {
-
+public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
+    /**------------------------------------------------------------------------------------------------------------------*/
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
         this.verifyRequest(paymentRequest);
-        return this.processRequest(paymentRequest);
-    }
 
+        String amount = paymentRequest.getAmount().getAmountInSmallestUnit().toString();
+
+        Boolean isPaymentFormUpdatedFilled = false;
+        if(!paymentRequest.getRequestContext().getRequestData().isEmpty()){
+            if(paymentRequest.getRequestContext().getRequestData().get("step").equals("2")){
+                isPaymentFormUpdatedFilled = true;
+            }
+        }
+
+        /* PaymentResponseSuccess */
+        if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || ((("10300".equals(amount) ||"10301".equals(amount)) && isPaymentFormUpdatedFilled))) {
+            String transactionAdditionalData = new String();
+
+            PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
+                    .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
+                    .withTransactionDetails(new EmptyTransactionDetails());
+
+            // If the payment form contains data, put them into transaction additional data
+            if (paymentRequest.getPaymentFormContext() != null
+                    && paymentRequest.getPaymentFormContext().getPaymentFormParameter() != null
+                    && !paymentRequest.getPaymentFormContext().getPaymentFormParameter().isEmpty()) {
+
+                transactionAdditionalData = paymentRequest.getPaymentFormContext().getPaymentFormParameter()
+                        .entrySet().stream()
+                        .map(e -> e.getKey() + "=" + e.getValue())
+                        .collect(Collectors.joining("&"));
+
+                transactionAdditionalData = transactionAdditionalData + "&" + paymentRequest.getPaymentFormContext().getSensitivePaymentFormParameter()
+                        .entrySet().stream()
+                        .map(e -> e.getKey() + "=" + e.getValue())
+                        .collect(Collectors.joining("&"));
+            }
+
+            builder.withTransactionAdditionalData(transactionAdditionalData);
+
+            return builder.build();
+        }
+
+        /* PaymentResponseFailure */
+        if( "10100".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (<= 50 caractères)");
+            return PaymentResponseUtil.failureClassic();
+        }
+        if( "10101".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA)");
+            return PaymentResponseUtil.failureMinimal();
+        }
+        if( "10102".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (> 50 caractères)");
+            return PaymentResponseUtil.failureLongErrorCode();
+        }
+        if( "10103".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode & partnerTransactionId");
+            return PaymentResponseUtil.failureWithPartnerTransactionId();
+        }
+
+        /* PaymentResponseRedirect */
+        PaymentResponseRedirect.RedirectionRequest redirectionRequest = null;
+        try {
+            redirectionRequest = PaymentResponseRedirect.RedirectionRequest.RedirectionRequestBuilder.aRedirectionRequest()
+                    .withRequestType(PaymentResponseRedirect.RedirectionRequest.RequestType.GET)
+                    .withUrl(new URL("https", "www.google.com", "/fr"))
+                    .build();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        if( "10200".equals( amount ) || amount.startsWith("2") ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId");
+            return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
+                    .withRedirectionRequest(redirectionRequest)
+                    .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
+                    .build();
+        }
+        if( "10201".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId & statusCode & requestContext");
+            Map<String, String> context = new HashMap<>();
+            context.put("key", "value");
+            return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
+                    .withRedirectionRequest(redirectionRequest)
+                    .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
+                    .withStatusCode("PARTNER_STATUS")
+                    .withRequestContext(
+                            RequestContext.RequestContextBuilder.aRequestContext()
+                                    .withRequestData(context)
+                                    .build()
+                    )
+                    .build();
+        }
+
+        /* PaymentResponseFormUpdated */
+        if ("10300".equals(amount)) {
+            try {
+                // Create the PaymentFormConfigurationResponse
+                PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
+                        .PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm(PaymentResponseUtil.aCustomForm())
+
+                        .build();
+
+                Map<String, String> context = new HashMap<>();
+                context.put("step", "2");
+
+                // Return the PaymentResponseFormUpdated
+                return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
+                        .aPaymentResponseFormUpdated()
+                        .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
+                        .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
+                                .withRequestData(context)
+                                .build())
+                        .build();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        /* PaymentResponseFormUpdated */
+        if ("10301".equals(amount)) {
+                // Create the PaymentFormConfigurationResponse
+            PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
+            try {
+                paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
+                        .PaymentFormConfigurationResponseSpecificBuilder
+                        .aPaymentFormConfigurationResponseSpecific()
+                        .withPaymentForm( PaymentResponseUtil.aPartnerWidgetForm())
+
+                        .build();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+
+            Map<String, String> context = new HashMap<>();
+                context.put("step", "2");
+
+                // Return the PaymentResponseFormUpdated
+                return PaymentResponseFormUpdated.PaymentResponseFormUpdatedBuilder
+                        .aPaymentResponseFormUpdated()
+                        .withPaymentFormConfigurationResponse(paymentFormConfigurationResponse)
+                        .withRequestContext(RequestContext.RequestContextBuilder.aRequestContext()
+                                .withRequestData(context)
+                                .build())
+                        .build();
+        }
+        /* PaymentResponseDoPayment */
+        if( "10400".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseDoPayment avec partnerTransactionId & paymentMode");
+            return PaymentResponseUtil.doPaymentMinimal();
+        }
+
+        /* PaymentResponseActiveWaiting */
+        if( "10500".equals( amount ) ){
+            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseActiveWaiting");
+            return new PaymentResponseActiveWaiting();
+        }
+
+        /* Generic plugin behaviours */
+        return super.generic(this.getClass().getSimpleName(),"paymentRequest", amount );
+    }
+    /**------------------------------------------------------------------------------------------------------------------*/
     /**
      * Performs standard verification of the request content.
      * Checks that every field required to process to a payment is filled in the request
-     * (ex: PartnerConfiguration, Order, etc.)
+     * (ex: PartnerConfiguration, Amount, etc.)
+     *
      * @param paymentRequest
      */
     private void verifyRequest(PaymentRequest paymentRequest) {
-        // TODO ! (if any required attribute is missing, throw a RuntimeException)
+        if (paymentRequest.getContractConfiguration() == null
+                || paymentRequest.getPartnerConfiguration() == null
+                || paymentRequest.getAmount() == null) {
+            throw new IllegalArgumentException("The PaymentRequest is missing required data");
+        }
     }
 
+    /**------------------------------------------------------------------------------------------------------------------*/
     /**
-     *
-     */
-    private PaymentResponse processRequest(PaymentRequest paymentRequest) {
-
-        // TODO: given the paymentRequest.amount (magic amount), return the corresponding response
-
-        PaymentResponse paymentResponse = null;
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        // PAYMENT RESPONSE REDIRECT
-        if ("PAYMENT_RESPONSE_REDIRECT".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseRedirect(paymentRequest);
-        }
-
-        // PAYMENT RESPONSE FORM UPDATED
-        if ("PAYMENT_RESPONSE_FORM_UPDATED".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseFormUpdated(paymentRequest);
-        }
-
-        // PAYMENT RESPONSE DO PAYMENT
-        if ("PAYMENT_RESPONSE_DO_PAYMENT".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseDoPayment(paymentRequest);
-        }
-
-        // PAYMENT RESPONSE ACTIVE WAITING
-        if ("PAYMENT_RESPONSE_ACTIVE_WAITING".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseActiveWaiting(paymentRequest);
-        }
-
-        // PAYMENT RESPONSE SUCCESS
-        if ("PAYMENT_RESPONSE_SUCCESS".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseSuccess(paymentRequest);
-        }
-
-        // PAYMENT RESPONSE FAILURE
-        if ("PAYMENT_RESPONSE_FAILURE".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = processRequestWithPaymentResponseFailure(paymentRequest);
-        }
-
-        // GENERIC PLUGIN ERROR CASE
-        if ("PAYMENT_RESPONSE_GENERIC_ERROR".equals(MagicAmountEnumValue.fromAmountValue(amount).getResponse())) {
-            paymentResponse = (PaymentResponse) processRequestWithResponseGenericError(paymentRequest);
-        }
-
-        return paymentResponse;
-
-    }
-
-    /**
-     *
      * @param paymentRequest
      * @return
      */
-    private PaymentResponse processRequestWithPaymentResponseRedirect(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        PaymentResponseRedirect.RedirectionRequest redirectionRequest = null;
-        String partnerTransactionId = paymentRequest.getTransactionId();
-        String statusCode = "200";
-        RequestContext requestContext = null;
-
-        if (new BigInteger("10000").equals(amount)) {
-
-            try {
-
-                redirectionRequest = PaymentResponseRedirect.RedirectionRequest.RedirectionRequestBuilder
-                        .aRedirectionRequest()
-                        .withRequestType(PaymentResponseRedirect.RedirectionRequest.RequestType.GET)
-                        .withUrl(new URL("https", "www.google.com", "/fr"))
-                        .build();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            return PaymentResponseRedirect.PaymentResponseRedirectBuilder
-                    .aPaymentResponseRedirect()
-                    .withRedirectionRequest(redirectionRequest)
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .build();
-
-        }
-
-        if (new BigInteger("10001").equals(amount)) {
-
-            try {
-
-                redirectionRequest = PaymentResponseRedirect.RedirectionRequest.RedirectionRequestBuilder
-                        .aRedirectionRequest()
-                        .withRequestType(PaymentResponseRedirect.RedirectionRequest.RequestType.GET)
-                        .withUrl(new URL("https", "www.google.com", "/fr"))
-                        .build();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            return PaymentResponseRedirect.PaymentResponseRedirectBuilder
-                    .aPaymentResponseRedirect()
-                    .withRedirectionRequest(redirectionRequest)
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .withStatusCode(statusCode)
-                    .build();
-
-        }
-
-        if (new BigInteger("10002").equals(amount)) {
-
-            try {
-
-                redirectionRequest = PaymentResponseRedirect.RedirectionRequest.RedirectionRequestBuilder
-                        .aRedirectionRequest()
-                        .withUrl(new URL("https", "www.google.com", "/fr"))
-                        .build();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            Map<String, String> context = new HashMap<>();
-            // TODO : Add data to the map if necessary
-
-            requestContext = RequestContext.RequestContextBuilder.aRequestContext()
-                    .withRequestData(context)
-                    .build();
-
-            return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
-                    .withRedirectionRequest(redirectionRequest)
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .withStatusCode(statusCode)
-                    .withRequestContext(requestContext)
-                    .build();
-
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
+    // TODO: remove (lors du traitement du ticket PAYLAPMEXT-207)
     private PaymentResponse processRequestWithPaymentResponseFormUpdated(PaymentRequest paymentRequest) {
 
         BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
@@ -282,143 +302,6 @@ public class PaymentServiceImpl extends AbstractService implements PaymentServic
         return null;
 
     }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
-    private PaymentResponse processRequestWithPaymentResponseDoPayment(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        String partnerTransactionId = paymentRequest.getTransactionId();
-
-        if (new BigInteger("10005").equals(amount)) {
-
-            Card card = Card.CardBuilder.aCard()
-                    .withBrand("brand")
-                    .withHolder("holder")
-                    .withExpirationDate(YearMonth.of(20, 01))
-                    .withPan("pan")
-                    .withPanType(Card.PanType.CARD_PAN)
-                    .build();
-
-            PaymentData3DS paymentData3DS = PaymentData3DS.Data3DSBuilder.aData3DS()
-                    .withCavv("cavv")
-                    .withEci("eci")
-                    .build();
-
-            PaymentModeCard paymentModeCard = PaymentModeCard.PaymentModeCardBuilder.aPaymentModeCard()
-                    .withPaymentDatas3DS(paymentData3DS)
-                    .withCard(card)
-                    .build();
-
-            return PaymentResponseDoPayment.PaymentResponseDoPaymentBuilder
-                    .aPaymentResponseDoPayment()
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .withPaymentMode(paymentModeCard)
-                    .build();
-
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
-    private PaymentResponse processRequestWithPaymentResponseActiveWaiting(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-
-        if (new BigInteger("10006").equals(amount)) {
-
-            return new PaymentResponseActiveWaiting();
-
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
-    private PaymentResponse processRequestWithPaymentResponseSuccess(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        String partnerTransactionId = paymentRequest.getTransactionId();
-
-        if (new BigInteger("10007").equals(amount)) {
-
-            BankAccount owner = BankAccount.BankAccountBuilder.aBankAccount()
-                    .withAccountNumber("")
-                    .withBankCode("")
-                    .withBankName("")
-                    .withBic("bic")
-                    .withCountryCode("FR")
-                    .withHolder( "" )
-                    .withIban("iban")
-                    .build();
-
-            BankTransfer transactionDetails = new BankTransfer( owner, null );
-
-            return PaymentResponseSuccess.PaymentResponseSuccessBuilder
-                    .aPaymentResponseSuccess()
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .withTransactionAdditionalData("transactionAdditionalData")
-                    .withStatusCode("status")
-                    .withMessage(new Message(SUCCESS, "Transaction acceptee"))
-                    .withTransactionDetails(transactionDetails)
-                    .build();
-
-        }
-
-        return null;
-
-    }
-
-    /**
-     *
-     * @param paymentRequest
-     * @return
-     */
-    private PaymentResponse processRequestWithPaymentResponseFailure(PaymentRequest paymentRequest) {
-
-        BigInteger amount = paymentRequest.getAmount().getAmountInSmallestUnit();
-
-        String partnerTransactionId = paymentRequest.getTransactionId();
-
-        if (new BigInteger("10090").equals(amount)) {
-
-            return PaymentResponseFailure.PaymentResponseFailureBuilder.aPaymentResponseFailure()
-                    .withFailureCause(FailureCause.INTERNAL_ERROR)
-                    .withErrorCode("no code transmitted")
-                    .build();
-
-        }
-
-        if (new BigInteger("10091").equals(amount)) {
-
-            return PaymentResponseFailure.PaymentResponseFailureBuilder
-                    .aPaymentResponseFailure()
-                    .withPartnerTransactionId(partnerTransactionId)
-                    .withErrorCode("error message")
-                    .withFailureCause(FailureCause.INVALID_DATA)
-                    .build();
-
-        }
-
-        return null;
-
-    }
+    /**------------------------------------------------------------------------------------------------------------------*/
 
 }
