@@ -89,6 +89,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         String behaviour = contractParametersCheckRequest.getAccountInfo()
                 .get(Constants.ContractConfigurationKeys.LISTBOX_PARAMETER);
 
+        if (behaviour == null) {
+            errors.put("listbox", "ListBox parameter is null");
+            return errors;
+        }
+
         switch( behaviour ){
             case CHECK_OK:
                 return errors;

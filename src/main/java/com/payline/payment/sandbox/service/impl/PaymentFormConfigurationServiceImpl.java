@@ -65,13 +65,19 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                 if( paymentFormConfigurationRequest.getPluginConfiguration() == null ){
                     throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
                 }
+
                 final List<SelectOption> banks = new ArrayList<>();
+
+
+
                 for( String s : paymentFormConfigurationRequest.getPluginConfiguration().split("\\|") ){
                     String[] pieces = s.split(":");
-                    banks.add( SelectOption.SelectOptionBuilder.aSelectOption()
-                            .withKey( pieces[0] )
-                            .withValue( pieces[1] )
-                            .build() );
+                    if(pieces.length == 2){
+                        banks.add(SelectOption.SelectOptionBuilder.aSelectOption()
+                                .withKey(pieces[0])
+                                .withValue(pieces[1])
+                                .build());
+                    }
                 }
 
                 // Build form
@@ -157,24 +163,27 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
 
     @Override
     public PaymentFormLogo getLogo(String s, Locale locale) {
-        InputStream input = this.getClass().getClassLoader().getResourceAsStream( "payline_logo.png" );
-        if (input == null) {
-            throw new RuntimeException("Plugin error: unable to load the logo file");
-        }
-        try {
-            // Read logo file
-            BufferedImage logo = ImageIO.read(input);
+        try (InputStream input = this.getClass().getClassLoader().getResourceAsStream("payline_logo.png")) {
+            if (input == null) {
+                throw new RuntimeException("Plugin error: unable to load the logo file");
+            }
+            try {
+                // Read logo file
+                BufferedImage logo = ImageIO.read(input);
 
-            // Recover byte array from image
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(logo, "png", baos);
+                // Recover byte array from image
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(logo, "png", baos);
 
-            return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
-                    .withFile(baos.toByteArray())
-                    .withContentType("image/png")
-                    .build();
+                return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
+                        .withFile(baos.toByteArray())
+                        .withContentType("image/png")
+                        .build();
+            } catch (IOException e) {
+                throw new RuntimeException("Plugin error: unable to read the logo", e);
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Plugin error: unable to read the logo", e);
+            throw new RuntimeException("Plugin error: unable to load the logo file", e);
         }
     }
 
