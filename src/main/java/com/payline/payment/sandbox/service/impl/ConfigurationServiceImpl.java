@@ -74,7 +74,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         /* PasswordParameter */
         PasswordParameter passwordParameter = new PasswordParameter();
         passwordParameter.setDescription("Password parameter");
-        passwordParameter.setKey(Constants.ContractConfigurationKeys.PASSWORD_PARAMETER);
+        passwordParameter.setKey(Constants.ContractConfigurationKeys.PASSW_PARAMETER);
         passwordParameter.setLabel("Password");
         passwordParameter.setRequired(false);
 

@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public class PaymentResponseUtil {
 
     public final static String PARTNER_TRANSACTION_ID = "PARTNER_ID.0123456789";
+    private final static String REQUIRED_ERROR_MESSAGE ="Required Error Message";
 
     public static PaymentResponseDoPayment doPaymentMinimal(){
         Card card = Card.CardBuilder.aCard()
@@ -195,7 +196,7 @@ public class PaymentResponseUtil {
                     .build()
             );
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Plugin error, PaymentFormDisplayFieldIFrame unable to create the URL: " + e);
         }
 
         // Add PaymentFormDisplayFieldLink
@@ -206,7 +207,7 @@ public class PaymentResponseUtil {
                     .withUrl(new URL("https://www.google.com"))
                     .build());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Plugin error, PaymentFormDisplayFieldLink unable to create the URL: " + e);
         }
 
         // Add PaymentFormDisplayFieldText
@@ -223,7 +224,7 @@ public class PaymentResponseUtil {
                 .withRequired(true)
                 .withValue("Value1")
                 .withDisabled(false)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSecured(true)
                 .withValidationErrorMessage("Validation Error Message")
                 .build());
@@ -234,7 +235,7 @@ public class PaymentResponseUtil {
                 .withKey("Key2")
                 .withLabel("Label2")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldBirthdate
@@ -243,7 +244,7 @@ public class PaymentResponseUtil {
                 .withKey("Key3")
                 .withLabel("Label3")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldCardNumber
@@ -256,7 +257,7 @@ public class PaymentResponseUtil {
                 .withKey("Key4")
                 .withLabel("Label4")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSchemes(schemes)
                 .build());
 
@@ -266,7 +267,7 @@ public class PaymentResponseUtil {
                 .withKey("Key5")
                 .withLabel("Label5")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldCheckbox
@@ -276,7 +277,7 @@ public class PaymentResponseUtil {
                 .withLabel("Label6")
                 .withPrechecked(false)
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSecured(true)
                 .build());
 
@@ -286,7 +287,7 @@ public class PaymentResponseUtil {
                 .withKey("Key7")
                 .withLabel("Label7")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldExpirationDate
@@ -295,7 +296,7 @@ public class PaymentResponseUtil {
                 .withKey("Key8")
                 .withLabel("Label8")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldIban
@@ -304,7 +305,7 @@ public class PaymentResponseUtil {
                 .withKey("Key9")
                 .withLabel("Label9")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .build());
 
         // Add PaymentFormInputFieldSelect
@@ -321,7 +322,7 @@ public class PaymentResponseUtil {
                 .withLabel("Label11")
                 .withPlaceholder("PlaceHolder")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSecured(true)
                 .withSelectOptions(selectOptions)
                 .withValidationErrorMessage("Validation Error Message")
@@ -338,7 +339,7 @@ public class PaymentResponseUtil {
                 .withLabel("Label12")
                 .withPlaceholder("PlaceHolder")
                 .withRequired(true)
-                .withRequiredErrorMessage("Required Error Message")
+                .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSecured(true)
                 .withValidation(validation)
                 .withValidationErrorMessage("Validation Error Message")
@@ -377,7 +378,7 @@ public class PaymentResponseUtil {
                     .withAsync(true)
                     .build();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Plugin error, PartnerWidgetScriptImport unable to create the URL: " + e);
         }
 
         // div that contains the script to load

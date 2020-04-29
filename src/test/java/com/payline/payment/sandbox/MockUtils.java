@@ -76,7 +76,7 @@ public class MockUtils {
                 new ContractProperty( ConfigurationServiceImpl.CHECK_OK ));
         contractProperties.put(Constants.ContractConfigurationKeys.NETWORK_LISTBOX_PARAMETER,
                 new ContractProperty( "value 1" ));
-        contractProperties.put(Constants.ContractConfigurationKeys.PASSWORD_PARAMETER,
+        contractProperties.put(Constants.ContractConfigurationKeys.PASSW_PARAMETER,
                 new ContractProperty( "secret" ));
 
         return new ContractConfiguration("Sandbox APM", contractProperties);

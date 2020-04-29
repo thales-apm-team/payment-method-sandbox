@@ -11,26 +11,19 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseActiveWaiting
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFormUpdated;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
-import com.payline.pmapi.bean.paymentform.bean.field.PaymentFormField;
-import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
-import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
-import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.PartnerWidgetOnPay;
-import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.PartnerWidgetOnPayCallBack;
-import com.payline.pmapi.bean.paymentform.bean.form.partnerwidget.PartnerWidgetScriptImport;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
 import com.payline.pmapi.service.PaymentService;
 
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
+
+    private static final String PAYMENT_REQUEST = "paymentRequest";
     /**------------------------------------------------------------------------------------------------------------------*/
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
@@ -39,17 +32,16 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         String amount = paymentRequest.getAmount().getAmountInSmallestUnit().toString();
 
         Boolean isPaymentFormUpdatedFilled = false;
-        if(!paymentRequest.getRequestContext().getRequestData().isEmpty()){
-            if(paymentRequest.getRequestContext().getRequestData().get("step").equals("2")){
+
+            if(!paymentRequest.getRequestContext().getRequestData().isEmpty() && paymentRequest.getRequestContext().getRequestData().get("step").equals("2")){
                 isPaymentFormUpdatedFilled = true;
             }
-        }
 
         /* PaymentResponseSuccess */
-        if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || ((("10300".equals(amount) ||"10301".equals(amount)) && isPaymentFormUpdatedFilled))) {
-            String transactionAdditionalData = new String();
+        if ("10000".equals(amount) || amount.matches("^[3-9][0-9]*$") || (("10300".equals(amount) ||"10301".equals(amount)) && isPaymentFormUpdatedFilled)) {
+            String transactionAdditionalData = "";
 
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseSuccess minimale");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseSuccess minimale");
 
             PaymentResponseSuccess.PaymentResponseSuccessBuilder builder = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
                     .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
@@ -78,19 +70,19 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         /* PaymentResponseFailure */
         if( "10100".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (<= 50 caractères)");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (<= 50 caractères)");
             return PaymentResponseUtil.failureClassic();
         }
         if( "10101".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA)");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA)");
             return PaymentResponseUtil.failureMinimal();
         }
         if( "10102".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (> 50 caractères)");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode (> 50 caractères)");
             return PaymentResponseUtil.failureLongErrorCode();
         }
         if( "10103".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode & partnerTransactionId");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseFailure avec failureCause(INVALID_DATA) & errorCode & partnerTransactionId");
             return PaymentResponseUtil.failureWithPartnerTransactionId();
         }
 
@@ -102,17 +94,17 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                     .withUrl(new URL("https", "www.google.com", "/fr"))
                     .build();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Plugin error, RedirectionRequest unable to create the URL: " + e);
         }
         if( "10200".equals( amount ) || amount.startsWith("2") ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId");
             return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
                     .withRedirectionRequest(redirectionRequest)
                     .withPartnerTransactionId(PaymentResponseUtil.PARTNER_TRANSACTION_ID)
                     .build();
         }
         if( "10201".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId & statusCode & requestContext");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId & statusCode & requestContext");
             Map<String, String> context = new HashMap<>();
             context.put("key", "value");
             return PaymentResponseRedirect.PaymentResponseRedirectBuilder.aPaymentResponseRedirect()
@@ -129,7 +121,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
 
         /* PaymentResponseFormUpdated */
         if ("10300".equals(amount)) {
-            Logger.log(this.getClass().getSimpleName(), "paymentRequest", amount, "PaymentResponseFormUpdated avec un formulaire complet");
+            Logger.log(this.getClass().getSimpleName(), PAYMENT_REQUEST, amount, "PaymentResponseFormUpdated avec un formulaire complet");
             // Create the PaymentFormConfigurationResponse
             PaymentFormConfigurationResponse paymentFormConfigurationResponse = PaymentFormConfigurationResponseSpecific
                     .PaymentFormConfigurationResponseSpecificBuilder
@@ -153,7 +145,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
         /* PaymentResponseFormUpdated */
         if ("10301".equals(amount)) {
-            Logger.log(this.getClass().getSimpleName(), "paymentRequest", amount, "PaymentResponseFormUpdated avec un PartnerWidgetForm");
+            Logger.log(this.getClass().getSimpleName(), PAYMENT_REQUEST, amount, "PaymentResponseFormUpdated avec un PartnerWidgetForm");
             // Create the PaymentFormConfigurationResponse
             PaymentFormConfigurationResponse paymentFormConfigurationResponse = null;
 
@@ -179,18 +171,18 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
         }
         /* PaymentResponseDoPayment */
         if( "10400".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseDoPayment avec partnerTransactionId & paymentMode");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseDoPayment avec partnerTransactionId & paymentMode");
             return PaymentResponseUtil.doPaymentMinimal();
         }
 
         /* PaymentResponseActiveWaiting */
         if( "10500".equals( amount ) ){
-            Logger.log(this.getClass().getSimpleName(),"paymentRequest", amount, "PaymentResponseActiveWaiting");
+            Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseActiveWaiting");
             return new PaymentResponseActiveWaiting();
         }
 
         /* Generic plugin behaviours */
-        return super.generic(this.getClass().getSimpleName(),"paymentRequest", amount );
+        return super.generic(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount );
     }
     /**------------------------------------------------------------------------------------------------------------------*/
     /**

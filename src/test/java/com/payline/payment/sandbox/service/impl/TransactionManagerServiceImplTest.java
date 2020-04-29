@@ -6,7 +6,6 @@ import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.response.PaymentResponse;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 import org.junit.jupiter.api.Test;
-import org.omg.CORBA.NameValuePair;
 
 import java.math.BigInteger;
 import java.util.Currency;
