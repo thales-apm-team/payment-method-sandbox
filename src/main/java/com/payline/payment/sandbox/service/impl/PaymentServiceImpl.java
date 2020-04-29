@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.exception.PluginException;
 import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
@@ -94,7 +95,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                     .withUrl(new URL("https", "www.google.com", "/fr"))
                     .build();
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Plugin error, RedirectionRequest unable to create the URL: " + e);
+            throw new PluginException("Plugin error, RedirectionRequest unable to create the URL: " + e);
         }
         if( "10200".equals( amount ) || amount.startsWith("2") ){
             Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId");

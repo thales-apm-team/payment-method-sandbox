@@ -1,5 +1,6 @@
 package com.payline.payment.sandbox.service.impl;
 
+import com.payline.payment.sandbox.exception.PluginException;
 import com.payline.payment.sandbox.utils.Logger;
 import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.service.AbstractService;
@@ -32,6 +33,8 @@ import java.util.Locale;
 
 public class PaymentFormConfigurationServiceImpl extends AbstractService<PaymentFormConfigurationResponse> implements PaymentFormConfigurationService {
 
+    private static final String GET_PAYMENT_FORM_CONFIGURATION = "getPaymentFormConfiguration";
+
     @Override
     public PaymentFormConfigurationResponse getPaymentFormConfiguration(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
         this.verifyRequest(paymentFormConfigurationRequest);
@@ -57,10 +60,10 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
         switch( amount ){
             /* PaymentFormConfigurationResponseSpecific */
             case "30000":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific NoField");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseSpecific NoField");
                 return noFieldResponse;
             case "30001":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific BankTransferForm");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseSpecific BankTransferForm");
                 // retrieve the banks list from PluginConfiguration
                 if( paymentFormConfigurationRequest.getPluginConfiguration() == null ){
                     throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
@@ -95,7 +98,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .build();
 
             case "30002":
-                Logger.log(this.getClass().getSimpleName(), "getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific avec un CustomForm complet");
+                Logger.log(this.getClass().getSimpleName(), GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseSpecific avec un CustomForm complet");
 
                 // Build form
                 CustomForm customForm = PaymentResponseUtil.aCustomForm();
@@ -105,7 +108,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .withPaymentForm(customForm)
                         .build();
             case "30003":
-                Logger.log(this.getClass().getSimpleName(), "getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseSpecific avec un PartnerWidgetForm complet");
+                Logger.log(this.getClass().getSimpleName(), GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseSpecific avec un PartnerWidgetForm complet");
 
                 // Build form
                 PartnerWidgetForm partnerWidgetForm = PaymentResponseUtil.aPartnerWidgetForm();
@@ -117,19 +120,19 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
 
             /* PaymentFormConfigurationResponseFailure */
             case "30100":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères)");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères)");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
                         .build();
             case "30101":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (> 50 caractères)");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (> 50 caractères)");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("This error code has not been truncated and is more than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
                         .build();
             case "30102":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères) & partnerTransactionId");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseFailure avec failureCause (INVALID_DATA) &  errorCode (<= 50 caractères) & partnerTransactionId");
                 return PaymentFormConfigurationResponseFailure.PaymentFormConfigurationResponseFailureBuilder.aPaymentFormConfigurationResponseFailure()
                         .withErrorCode("Error code less than 50 characters long")
                         .withFailureCause( FailureCause.INVALID_DATA )
@@ -138,14 +141,14 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
 
             /* PaymentFormConfigurationResponseProvided */
             case "30200":
-                Logger.log(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount, "PaymentFormConfigurationResponseProvided");
+                Logger.log(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount, "PaymentFormConfigurationResponseProvided");
                 return PaymentFormConfigurationResponseProvided.PaymentFormConfigurationResponseBuilder.aPaymentFormConfigurationResponse()
                         .withContextPaymentForm( new HashMap<>() )
                         .build();
 
             /* Generic plugin errors */
             default:
-                return super.generic(this.getClass().getSimpleName(),"getPaymentFormConfiguration", amount );
+                return super.generic(this.getClass().getSimpleName(),GET_PAYMENT_FORM_CONFIGURATION, amount );
         }
     }
 
@@ -165,9 +168,8 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
     public PaymentFormLogo getLogo(String s, Locale locale) {
         try (InputStream input = this.getClass().getClassLoader().getResourceAsStream("payline_logo.png")) {
             if (input == null) {
-                throw new RuntimeException("Plugin error: unable to load the logo file");
+                throw new PluginException("Plugin error: unable to load the logo file");
             }
-            try {
                 // Read logo file
                 BufferedImage logo = ImageIO.read(input);
 
@@ -179,11 +181,9 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                         .withFile(baos.toByteArray())
                         .withContentType("image/png")
                         .build();
-            } catch (IOException e) {
-                throw new RuntimeException("Plugin error: unable to read the logo", e);
-            }
+
         } catch (IOException e) {
-            throw new RuntimeException("Plugin error: unable to load the logo file", e);
+            throw new PluginException("Plugin error: unable to load the logo file", e);
         }
     }
 
