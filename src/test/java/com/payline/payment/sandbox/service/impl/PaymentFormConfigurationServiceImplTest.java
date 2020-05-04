@@ -223,14 +223,4 @@ class  PaymentFormConfigurationServiceImplTest {
         doReturn(null).when(mockRequest).getLocale();
         assertThrows(IllegalArgumentException.class, () -> service.getPaymentFormLogo(mockLogoRequest));
     }
-
-    /**
-     * This test case ensures that, when an null amount is given,
-     * the method returns throw an IllegalArgumentException.
-     */
-    @Test
-    void paymentRequest_getLogo() {
-        //TODO
-
-    }
 }

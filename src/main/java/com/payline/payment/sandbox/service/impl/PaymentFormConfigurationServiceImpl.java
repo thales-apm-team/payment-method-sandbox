@@ -34,7 +34,7 @@ import java.util.Locale;
 
 public class PaymentFormConfigurationServiceImpl extends AbstractService<PaymentFormConfigurationResponse> implements PaymentFormConfigurationService {
 
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TransactionManagerServiceImpl.class);
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(PaymentFormConfigurationServiceImpl.class);
     private static final String GET_PAYMENT_FORM_CONFIGURATION = "getPaymentFormConfiguration";
 
     @Override
@@ -170,24 +170,32 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
             }
                 // Read logo file
                 BufferedImage logo = ImageIO.read(input);
-
-                // Recover byte array from image
-              try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                  ImageIO.write(logo, "png", baos);
-
-                  return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
-                          .withFile(baos.toByteArray())
-                          .withContentType("image/png")
-                          .build();
-
-              }catch (IOException e) {
-                  LOGGER.error("Unable to recover byte array from image : " + e);
-                  throw new PluginException("Plugin error: unable to recover byte array from image", e);
-              }
+                return recoverByteArrayFromImage(logo);
 
         } catch (IOException e) {
             LOGGER.error("Unable to load the logo file: " + e);
             throw new PluginException("Plugin error: unable to load the logo file", e);
+        }
+    }
+
+    /**
+     *   Recover byte array from image to return a PaymentFormLogo
+     * @param logo
+     * @return
+     */
+    private PaymentFormLogo recoverByteArrayFromImage(BufferedImage logo){
+        // Recover byte array from image
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(logo, "png", baos);
+
+            return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
+                    .withFile(baos.toByteArray())
+                    .withContentType("image/png")
+                    .build();
+
+        }catch (IOException e) {
+            LOGGER.error("Unable to recover byte array from image : " + e);
+            throw new PluginException("Plugin error: unable to recover byte array from image", e);
         }
     }
 

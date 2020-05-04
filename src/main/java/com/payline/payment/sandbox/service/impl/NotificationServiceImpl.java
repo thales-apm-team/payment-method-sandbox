@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class NotificationServiceImpl extends AbstractService<NotificationResponse> implements NotificationService {
     private static final String NOTIFICATION_REQUEST = "notificationRequest";
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(Logger.class);
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(NotificationServiceImpl.class);
 
     @Override
     public NotificationResponse parse(NotificationRequest notificationRequest) {

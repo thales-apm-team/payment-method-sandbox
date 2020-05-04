@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
 
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TransactionManagerServiceImpl.class);
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(PaymentServiceImpl.class);
     private static final String PAYMENT_REQUEST = "paymentRequest";
 
     /**------------------------------------------------------------------------------------------------------------------*/
@@ -158,7 +158,6 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                     .PaymentFormConfigurationResponseSpecificBuilder
                     .aPaymentFormConfigurationResponseSpecific()
                     .withPaymentForm(PaymentResponseUtil.aPartnerWidgetForm())
-
                     .build();
 
 

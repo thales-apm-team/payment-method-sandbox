@@ -1,7 +1,6 @@
 package com.payline.payment.sandbox.utils;
 
 import com.payline.payment.sandbox.exception.PluginException;
-import com.payline.payment.sandbox.service.impl.TransactionManagerServiceImpl;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.common.OnHoldCause;
@@ -32,11 +31,12 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.regex.Pattern;
 
 public class PaymentResponseUtil {
 
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TransactionManagerServiceImpl.class);
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(PaymentResponseUtil.class);
     public static final String PARTNER_TRANSACTION_ID = "PARTNER_ID.0123456789";
     private static final String REQUIRED_ERROR_MESSAGE = "Required Error Message";
     private static final String VALIDATION_ERROR_MESSAGE = "Validation Error Message";
@@ -414,5 +414,4 @@ public class PaymentResponseUtil {
 
 
     }
-
 }
