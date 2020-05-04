@@ -165,7 +165,7 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
     public PaymentFormLogo getLogo(String s, Locale locale) {
         try (InputStream input = this.getClass().getClassLoader().getResourceAsStream("payline_logo.png")) {
             if (input == null) {
-                LOGGER.error("Unable to load the logo file: " + e);
+                LOGGER.error("Unable to load the logo file" );
                 throw new PluginException("Plugin error: unable to load the logo file");
             }
                 // Read logo file
