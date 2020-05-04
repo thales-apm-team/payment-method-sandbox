@@ -14,6 +14,7 @@ import com.payline.pmapi.bean.payment.response.impl.PaymentResponseRedirect;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
+import com.payline.pmapi.logger.LogManager;
 import com.payline.pmapi.service.PaymentService;
 
 import java.net.MalformedURLException;
@@ -24,7 +25,9 @@ import java.util.stream.Collectors;
 
 public class PaymentServiceImpl extends AbstractService<PaymentResponse> implements PaymentService {
 
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TransactionManagerServiceImpl.class);
     private static final String PAYMENT_REQUEST = "paymentRequest";
+
     /**------------------------------------------------------------------------------------------------------------------*/
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
@@ -95,6 +98,7 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                     .withUrl(new URL("https", "www.google.com", "/fr"))
                     .build();
         } catch (MalformedURLException e) {
+            LOGGER.error("RedirectionRequest unable to create the URL: " + e);
             throw new PluginException("Plugin error, RedirectionRequest unable to create the URL: " + e);
         }
         if( "10200".equals( amount ) || amount.startsWith("2") ){

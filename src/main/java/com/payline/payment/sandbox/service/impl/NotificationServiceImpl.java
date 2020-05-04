@@ -11,6 +11,7 @@ import com.payline.pmapi.bean.notification.response.impl.IgnoreNotificationRespo
 import com.payline.pmapi.bean.notification.response.impl.PaymentResponseByNotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.TransactionStateChangedResponse;
 import com.payline.pmapi.bean.payment.request.NotifyTransactionStatusRequest;
+import com.payline.pmapi.logger.LogManager;
 import com.payline.pmapi.service.NotificationService;
 
 import java.io.BufferedReader;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 
 public class NotificationServiceImpl extends AbstractService<NotificationResponse> implements NotificationService {
     private static final String NOTIFICATION_REQUEST = "notificationRequest";
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(Logger.class);
+
     @Override
     public NotificationResponse parse(NotificationRequest notificationRequest) {
         this.verifyRequest( notificationRequest );
@@ -99,6 +102,7 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
                     return super.generic(this.getClass().getSimpleName(), NOTIFICATION_REQUEST, amount);
             }
         } catch (IOException e) {
+            LOGGER.error("Unable to load the BufferReader :", e);
             throw new PluginException("Plugin error: unable to load the BufferReader", e);
         }
     }

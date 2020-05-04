@@ -29,7 +29,7 @@ import static org.mockito.Mockito.doReturn;
 
 
 class  PaymentFormConfigurationServiceImplTest {
-    @Mock
+
     private PaymentFormConfigurationServiceImpl service = new PaymentFormConfigurationServiceImpl();
 
     @Mock
@@ -88,7 +88,6 @@ class  PaymentFormConfigurationServiceImplTest {
                 .withAmount(
                         new Amount( new BigInteger( "30001"), Currency.getInstance("EUR") )
                 )
-                .withPluginConfiguration("bankId1:bank name 1|bankId2:bank name 2")
                 .build();
 
         // when: calling the method paymentRequest

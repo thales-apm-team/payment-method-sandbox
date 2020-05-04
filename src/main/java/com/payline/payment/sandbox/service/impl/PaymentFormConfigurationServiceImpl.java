@@ -19,6 +19,7 @@ import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFor
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
 import com.payline.pmapi.bean.paymentform.response.logo.PaymentFormLogoResponse;
 import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseFile;
+import com.payline.pmapi.logger.LogManager;
 import com.payline.pmapi.service.PaymentFormConfigurationService;
 
 import javax.imageio.ImageIO;
@@ -33,6 +34,7 @@ import java.util.Locale;
 
 public class PaymentFormConfigurationServiceImpl extends AbstractService<PaymentFormConfigurationResponse> implements PaymentFormConfigurationService {
 
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TransactionManagerServiceImpl.class);
     private static final String GET_PAYMENT_FORM_CONFIGURATION = "getPaymentFormConfiguration";
 
     @Override
@@ -69,18 +71,13 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                     throw new IllegalArgumentException("PaymentFormConfigurationRequest is missing a PluginConfiguration");
                 }
 
+                // Fake bank list creation
                 final List<SelectOption> banks = new ArrayList<>();
-
-
-
-                for( String s : paymentFormConfigurationRequest.getPluginConfiguration().split("\\|") ){
-                    String[] pieces = s.split(":");
-                    if(pieces.length == 2){
-                        banks.add(SelectOption.SelectOptionBuilder.aSelectOption()
-                                .withKey(pieces[0])
-                                .withValue(pieces[1])
-                                .build());
-                    }
+                for (int x = 1; x < 3; x++) {
+                    banks.add(SelectOption.SelectOptionBuilder.aSelectOption()
+                            .withKey("bankId" + x)
+                            .withValue("bank name " + x)
+                            .build());
                 }
 
                 // Build form
@@ -168,21 +165,28 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
     public PaymentFormLogo getLogo(String s, Locale locale) {
         try (InputStream input = this.getClass().getClassLoader().getResourceAsStream("payline_logo.png")) {
             if (input == null) {
+                LOGGER.error("Unable to load the logo file: " + e);
                 throw new PluginException("Plugin error: unable to load the logo file");
             }
                 // Read logo file
                 BufferedImage logo = ImageIO.read(input);
 
                 // Recover byte array from image
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(logo, "png", baos);
+              try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                  ImageIO.write(logo, "png", baos);
 
-                return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
-                        .withFile(baos.toByteArray())
-                        .withContentType("image/png")
-                        .build();
+                  return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
+                          .withFile(baos.toByteArray())
+                          .withContentType("image/png")
+                          .build();
+
+              }catch (IOException e) {
+                  LOGGER.error("Unable to recover byte array from image : " + e);
+                  throw new PluginException("Plugin error: unable to recover byte array from image", e);
+              }
 
         } catch (IOException e) {
+            LOGGER.error("Unable to load the logo file: " + e);
             throw new PluginException("Plugin error: unable to load the logo file", e);
         }
     }
