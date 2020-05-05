@@ -31,6 +31,9 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
     /**------------------------------------------------------------------------------------------------------------------*/
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
+
+        PaymentResponseUtil.apiResponseDelay();
+
         this.verifyRequest(paymentRequest);
 
         String amount = paymentRequest.getAmount().getAmountInSmallestUnit().toString();

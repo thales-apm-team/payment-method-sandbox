@@ -31,7 +31,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class PaymentResponseUtil {
@@ -413,5 +413,19 @@ public class PaymentResponseUtil {
                 .build();
 
 
+    }
+    /**
+     * Wait 5 seconds before continue
+     * @return
+     */
+    public static void apiResponseDelay() {
+        try {
+            LOGGER.info("Attente de réponse de l'API ... ");
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            LOGGER.error("Error during the delay time: " + e);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+        }
     }
 }

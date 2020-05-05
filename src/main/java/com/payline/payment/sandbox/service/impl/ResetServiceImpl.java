@@ -14,6 +14,9 @@ public class ResetServiceImpl extends AbstractService<ResetResponse> implements 
     private static final String RESET_REQUEST = "resetRequest";
     @Override
     public ResetResponse resetRequest(ResetRequest resetRequest) {
+
+        PaymentResponseUtil.apiResponseDelay();
+
         this.verifyRequest(resetRequest);
 
         String amount = resetRequest.getAmount().getAmountInSmallestUnit().toString();

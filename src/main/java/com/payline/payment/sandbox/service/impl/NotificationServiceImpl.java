@@ -26,6 +26,9 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
 
     @Override
     public NotificationResponse parse(NotificationRequest notificationRequest) {
+
+        PaymentResponseUtil.apiResponseDelay();
+
         this.verifyRequest( notificationRequest );
 
         // retrieve amount from the NotificationRequest content

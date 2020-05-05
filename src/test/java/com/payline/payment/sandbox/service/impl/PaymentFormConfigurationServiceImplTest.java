@@ -1,6 +1,7 @@
 package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.MockUtils;
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.paymentform.bean.form.BankTransferForm;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
@@ -9,6 +10,7 @@ import com.payline.pmapi.bean.paymentform.bean.form.PartnerWidgetForm;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormLogoRequest;
 import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConfigurationResponse;
+import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseFailure;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseProvided;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +24,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Currency;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 
 
@@ -95,6 +96,7 @@ class  PaymentFormConfigurationServiceImplTest {
 
         // then: the banks list contains 2 elements
         assertEquals( PaymentFormConfigurationResponseSpecific.class, response.getClass() );
+        assertDoesNotThrow(()->service.getPaymentFormConfiguration(request));
         assertEquals( BankTransferForm.class, ((PaymentFormConfigurationResponseSpecific)response).getPaymentForm().getClass() );
         BankTransferForm form = (BankTransferForm)((PaymentFormConfigurationResponseSpecific)response).getPaymentForm();
         assertEquals( 2, form.getBanks().size() );
@@ -102,6 +104,7 @@ class  PaymentFormConfigurationServiceImplTest {
         assertEquals( "bank name 1", form.getBanks().get(0).getValue() );
         assertEquals( "bankId2", form.getBanks().get(1).getKey() );
         assertEquals( "bank name 2", form.getBanks().get(1).getValue() );
+
     }
 
     /**
@@ -169,7 +172,7 @@ class  PaymentFormConfigurationServiceImplTest {
     @Test
     void getPaymentFormConfiguration_NoPluginConfiguration() {
         doReturn(null).when(mockRequest).getPluginConfiguration();
-        assertThrows(IllegalArgumentException.class, () -> service.getPaymentFormConfiguration(mockRequest));
+        assertThrows(IllegalArgumentException.class, () -> service.getPaymentFormConfiguration(mockRequest),"PaymentFormConfigurationRequest is missing a PluginConfiguration");
     }
 
     /**
@@ -178,7 +181,7 @@ class  PaymentFormConfigurationServiceImplTest {
      */
     @ParameterizedTest(name = "[{index}] first digit: {0}")
     @ValueSource(strings = {"0"})
-    void getPaymentFormConfiguration_PaymentFormConfigurationResponseFailure( int lastDigit ){
+    void getPaymentFormConfiguration_PaymentFormConfigurationResponseProvided( int lastDigit ){
         // given: the request containing the magic amount
         PaymentFormConfigurationRequest request = MockUtils.aPaymentFormConfigurationRequestBuilder()
                 .withAmount(
@@ -222,5 +225,25 @@ class  PaymentFormConfigurationServiceImplTest {
     void paymentRequest_PaymentFormLogoRequest() {
         doReturn(null).when(mockRequest).getLocale();
         assertThrows(IllegalArgumentException.class, () -> service.getPaymentFormLogo(mockLogoRequest));
+    }
+    /**
+     * This test case ensures that, when the tested service is PaymentFormConfigurationResponseProvided,
+     * the methods returns a PaymentFormConfigurationResponseProvided
+     */
+    @ParameterizedTest(name = "[{index}] first digit: {0}")
+    @ValueSource(strings = {"0","1","2"})
+    void getPaymentFormConfiguration_PaymentFormConfigurationResponseFailure( int lastDigit ){
+        // given: the request containing the magic amount
+        PaymentFormConfigurationRequest request = MockUtils.aPaymentFormConfigurationRequestBuilder()
+                .withAmount(
+                        new Amount( new BigInteger( "3010" + lastDigit), Currency.getInstance("EUR") )
+                )
+                .build();
+
+        // when: calling the method paymentRequest
+        PaymentFormConfigurationResponse response = service.getPaymentFormConfiguration( request );
+
+        // then: the response is a success
+        assertEquals( PaymentFormConfigurationResponseFailure.class, response.getClass() );
     }
 }

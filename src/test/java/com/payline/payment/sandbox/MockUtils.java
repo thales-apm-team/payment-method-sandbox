@@ -12,6 +12,7 @@ import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
 import com.payline.pmapi.bean.payment.request.TransactionStatusRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormLogoRequest;
+import com.payline.pmapi.bean.reset.request.ResetRequest;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -20,6 +21,9 @@ import java.util.*;
  * Utility class that generates mocks of frequently used objects.
  */
 public class MockUtils {
+
+    private static final String TRANSACTIONID = "123456789012345678901";
+    private static final String PARTNER_TRANSACTIONID = "098765432109876543210";
 
     /**
      * Generate a valid accountInfo, an attribute of a {@link ContractParametersCheckRequest} instance.
@@ -300,4 +304,22 @@ public class MockUtils {
                 .withSensitivePaymentFormParameter( SensitivePaymentFormParameter )
                 .build();
     }
+    public static ResetRequest aResetRequest() {
+        return aResetRequestBuilder().build();
+
+
+    }
+
+    public static ResetRequest.ResetRequestBuilder aResetRequestBuilder() {
+        return ResetRequest.ResetRequestBuilder.aResetRequest()
+                .withAmount(aPaylineAmount())
+                .withOrder(anOrder())
+                .withBuyer(aBuyer())
+                .withContractConfiguration(aContractConfiguration())
+                .withEnvironment(anEnvironment())
+                .withTransactionId(TRANSACTIONID)
+                .withPartnerTransactionId(PARTNER_TRANSACTIONID)
+                .withPartnerConfiguration(aPartnerConfiguration());
+    }
+
 }

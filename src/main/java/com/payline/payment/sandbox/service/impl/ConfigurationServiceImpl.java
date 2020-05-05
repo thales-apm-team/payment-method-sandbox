@@ -1,6 +1,7 @@
 package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.utils.Constants;
+import com.payline.payment.sandbox.utils.PaymentResponseUtil;
 import com.payline.payment.sandbox.utils.properties.ReleaseProperties;
 import com.payline.pmapi.bean.configuration.AvailableNetwork;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
@@ -83,6 +84,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
     @Override
     public Map<String, String> check(ContractParametersCheckRequest contractParametersCheckRequest) {
+
+        PaymentResponseUtil.apiResponseDelay();
+
         Map<String, String> errors = new HashMap<>();
 
         // Retrieve the expected behaviour in the listbox parameter

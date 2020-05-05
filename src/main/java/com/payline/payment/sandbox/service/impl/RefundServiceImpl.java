@@ -14,6 +14,9 @@ public class RefundServiceImpl extends AbstractService<RefundResponse> implement
     private static final String REFUND_REQUEST = "refundRequest";
     @Override
     public RefundResponse refundRequest(RefundRequest refundRequest) {
+
+        PaymentResponseUtil.apiResponseDelay();
+
         this.verifyRequest(refundRequest);
 
         String amount = refundRequest.getAmount().getAmountInSmallestUnit().toString();

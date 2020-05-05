@@ -61,6 +61,9 @@ public class PaymentWithRedirectionServiceImpl extends AbstractService<PaymentRe
     }
 
     private PaymentResponse process(String method, String amount ){
+
+        PaymentResponseUtil.apiResponseDelay();
+
         // retrieve the last 3 digits of the amount, which identify the response type
         String amountLastDigits = amount.substring(2);
 
