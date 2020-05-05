@@ -4,6 +4,7 @@ import com.payline.payment.sandbox.exception.PluginException;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.common.OnHoldCause;
+import com.payline.pmapi.bean.payment.ContractConfiguration;
 import com.payline.pmapi.bean.payment.response.PaymentData3DS;
 import com.payline.pmapi.bean.payment.response.PaymentModeCard;
 import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.BankAccount;
@@ -418,14 +419,17 @@ public class PaymentResponseUtil {
      * Wait 5 seconds before continue
      * @return
      */
-    public static void apiResponseDelay() {
-        try {
-            LOGGER.info("Attente de réponse de l'API ... ");
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            LOGGER.error("Error during the delay time: " + e);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
+    public static void apiResponseDelay(ContractConfiguration contractConfiguration) {
+        if (contractConfiguration.getContractProperties().containsKey("delay") && contractConfiguration.getProperty("delay").getValue().equals("true")) {
+            try {
+                LOGGER.info("Attente de réponse de l'API ... ");
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                LOGGER.error("Error during the delay time: " + e);
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+            }
         }
     }
+
 }

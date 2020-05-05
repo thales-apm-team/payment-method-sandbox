@@ -85,7 +85,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     @Override
     public Map<String, String> check(ContractParametersCheckRequest contractParametersCheckRequest) {
 
-        PaymentResponseUtil.apiResponseDelay();
+        if(contractParametersCheckRequest.getContractConfiguration() != null){
+            PaymentResponseUtil.apiResponseDelay(contractParametersCheckRequest.getContractConfiguration());
+        }
 
         Map<String, String> errors = new HashMap<>();
 

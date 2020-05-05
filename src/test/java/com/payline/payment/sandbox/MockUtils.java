@@ -6,6 +6,7 @@ import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
 import com.payline.pmapi.bean.configuration.request.RetrievePluginConfigurationRequest;
+import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.payment.*;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
@@ -14,6 +15,7 @@ import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationReques
 import com.payline.pmapi.bean.paymentform.request.PaymentFormLogoRequest;
 import com.payline.pmapi.bean.reset.request.ResetRequest;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -25,7 +27,7 @@ public class MockUtils {
     private static final String TRANSACTIONID = "123456789012345678901";
     private static final String PARTNER_TRANSACTIONID = "098765432109876543210";
 
-    /**
+     /**
      * Generate a valid accountInfo, an attribute of a {@link ContractParametersCheckRequest} instance.
      */
     public static Map<String, String> anAccountInfo(){
@@ -223,10 +225,17 @@ public class MockUtils {
     }
 
     /**
-     * Generate a valid {@link RedirectionPaymentRequest}.
+     * Generate a valid {@link RetrievePluginConfigurationRequest}.
      */
     public static RedirectionPaymentRequest aRedirectionPaymentRequest(){
-        return RedirectionPaymentRequest.builder()
+        return (RedirectionPaymentRequest) aRedirectionPaymentRequestBuilder().build();
+    }
+
+    /**
+     * Generate a valid {@link RedirectionPaymentRequest}.
+     */
+    public static RedirectionPaymentRequest.Builder aRedirectionPaymentRequestBuilder(){
+        return (RedirectionPaymentRequest.Builder) RedirectionPaymentRequest.builder()
                 .withAmount( aPaylineAmount() )
                 .withBrowser( aBrowser() )
                 .withBuyer( aBuyer() )
@@ -234,8 +243,7 @@ public class MockUtils {
                 .withEnvironment( anEnvironment() )
                 .withOrder( anOrder() )
                 .withPartnerConfiguration( aPartnerConfiguration() )
-                .withTransactionId( aTransactionId() )
-                .build();
+                .withTransactionId( aTransactionId());
     }
 
     /**
@@ -306,8 +314,6 @@ public class MockUtils {
     }
     public static ResetRequest aResetRequest() {
         return aResetRequestBuilder().build();
-
-
     }
 
     public static ResetRequest.ResetRequestBuilder aResetRequestBuilder() {
@@ -322,4 +328,17 @@ public class MockUtils {
                 .withPartnerConfiguration(aPartnerConfiguration());
     }
 
+    public static NotificationRequest aNotificationRequest() {
+        return aNotificationRequestBuilder().build();
+    }
+
+    public static NotificationRequest.NotificationRequestBuilder aNotificationRequestBuilder(){
+        return NotificationRequest.NotificationRequestBuilder
+                .aNotificationRequest()
+                .withContent(new ByteArrayInputStream("40000".getBytes()))
+                .withHttpMethod("GET")
+                .withPathInfo("foo")
+                .withContractConfiguration(aContractConfiguration())
+                .withHeaderInfos(new HashMap<>());
+    }
 }

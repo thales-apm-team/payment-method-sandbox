@@ -15,7 +15,9 @@ public class RefundServiceImpl extends AbstractService<RefundResponse> implement
     @Override
     public RefundResponse refundRequest(RefundRequest refundRequest) {
 
-        PaymentResponseUtil.apiResponseDelay();
+        if(refundRequest.getContractConfiguration() != null){
+            PaymentResponseUtil.apiResponseDelay(refundRequest.getContractConfiguration());
+        }
 
         this.verifyRequest(refundRequest);
 

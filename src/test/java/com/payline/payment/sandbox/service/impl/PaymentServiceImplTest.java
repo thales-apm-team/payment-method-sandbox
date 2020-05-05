@@ -3,6 +3,8 @@ package com.payline.payment.sandbox.service.impl;
 import com.payline.payment.sandbox.MockUtils;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.FailureCause;
+import com.payline.pmapi.bean.payment.ContractConfiguration;
+import com.payline.pmapi.bean.payment.ContractProperty;
 import com.payline.pmapi.bean.payment.PaymentFormContext;
 import com.payline.pmapi.bean.payment.RequestContext;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
@@ -285,6 +287,7 @@ class PaymentServiceImplTest {
         doReturn(null).when(mockRequest).getAmount();
         assertThrows(IllegalArgumentException.class, () -> service.paymentRequest(mockRequest));
     }
+
     /**
      * This test case ensures that, when an null ContractConfiguration is given,
      * the method returns throw an IllegalArgumentException.
@@ -294,6 +297,7 @@ class PaymentServiceImplTest {
         doReturn(null).when(mockRequest).getContractConfiguration();
         assertThrows(IllegalArgumentException.class, () -> service.paymentRequest(mockRequest));
     }
+
     /**
      * This test case ensures that, when an PartnerConfiguration is given,
      * the method returns throw an IllegalArgumentException.
@@ -303,6 +307,7 @@ class PaymentServiceImplTest {
         doReturn(null).when(mockRequest).getPartnerConfiguration();
         assertThrows(IllegalArgumentException.class, () -> service.paymentRequest(mockRequest));
     }
+
     /**
      * This test case ensures that, when an PartnerConfiguration, an Amount and a ContractConfiguration are given,
      * the method returns throw an IllegalArgumentException.
@@ -313,5 +318,39 @@ class PaymentServiceImplTest {
         doReturn(null).when(mockRequest).getContractConfiguration();
         doReturn(null).when(mockRequest).getPartnerConfiguration();
         assertThrows(IllegalArgumentException.class, () -> service.paymentRequest(mockRequest));
+    }
+
+    /**
+     * This test case ensures that, when an amount of 10200  is given with a delay in the contractConfiguration ,
+     * the method returns a PaymentResponseRedirect after a delay of 2 seconds.
+     */
+    @ParameterizedTest(name = "[{index}] first digit: {0}")
+    @ValueSource(strings = {"0"})
+    void paymentRequest_PaymentResponseWithDelay(int lastDigit) {
+        // given: the payment request containing the magic amount
+
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+        contractProperties.put("delay",
+                new ContractProperty("true"));
+
+
+        PaymentRequest request = MockUtils.aPaylinePaymentRequestBuilder()
+                .withAmount(
+                        new Amount(new BigInteger("1020" + lastDigit), Currency.getInstance("EUR"))
+                )
+                .withContractConfiguration(
+                        new ContractConfiguration("Sandbox APM", contractProperties)
+                )
+                .build();
+        long startTime = System.currentTimeMillis();
+        // when: calling the method paymentRequest
+        PaymentResponse response = service.paymentRequest(request);
+        long endTime = System.currentTimeMillis();
+        long duration = (endTime - startTime);
+
+        // then: the response is a success
+        assertEquals(PaymentResponseRedirect.class, response.getClass());
+        assertTrue(duration > 2000);
+
     }
 }

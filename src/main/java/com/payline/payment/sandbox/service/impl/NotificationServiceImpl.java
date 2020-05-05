@@ -27,7 +27,9 @@ public class NotificationServiceImpl extends AbstractService<NotificationRespons
     @Override
     public NotificationResponse parse(NotificationRequest notificationRequest) {
 
-        PaymentResponseUtil.apiResponseDelay();
+        if(notificationRequest.getContractConfiguration() != null){
+            PaymentResponseUtil.apiResponseDelay(notificationRequest.getContractConfiguration());
+        }
 
         this.verifyRequest( notificationRequest );
 

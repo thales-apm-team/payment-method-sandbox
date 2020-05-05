@@ -15,7 +15,9 @@ public class ResetServiceImpl extends AbstractService<ResetResponse> implements 
     @Override
     public ResetResponse resetRequest(ResetRequest resetRequest) {
 
-        PaymentResponseUtil.apiResponseDelay();
+        if(resetRequest.getContractConfiguration() != null){
+            PaymentResponseUtil.apiResponseDelay(resetRequest.getContractConfiguration());
+        }
 
         this.verifyRequest(resetRequest);
 

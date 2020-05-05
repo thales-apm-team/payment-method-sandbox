@@ -32,7 +32,9 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
 
-        PaymentResponseUtil.apiResponseDelay();
+        if(paymentRequest.getContractConfiguration() != null){
+                PaymentResponseUtil.apiResponseDelay(paymentRequest.getContractConfiguration());
+        }
 
         this.verifyRequest(paymentRequest);
 
