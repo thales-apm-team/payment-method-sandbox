@@ -2,6 +2,8 @@ package com.payline.payment.sandbox;
 
 import com.payline.payment.sandbox.service.impl.ConfigurationServiceImpl;
 import com.payline.payment.sandbox.utils.Constants;
+import com.payline.pmapi.bean.capture.request.CaptureRequest;
+import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
@@ -66,6 +68,10 @@ public class MockUtils {
         return Buyer.BuyerBuilder.aBuyer()
                 .withFullName( new Buyer.FullName( "Marie", "Durand", "1" ) )
                 .build();
+    }
+
+    public static String getPartnerTransactionid(){
+        return PARTNER_TRANSACTIONID;
     }
 
     /**
