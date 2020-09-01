@@ -19,6 +19,7 @@ import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFor
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
 import com.payline.pmapi.bean.paymentform.response.logo.PaymentFormLogoResponse;
 import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseFile;
+import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseLink;
 import com.payline.pmapi.logger.LogManager;
 import com.payline.pmapi.service.PaymentFormConfigurationService;
 
@@ -27,6 +28,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +39,10 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
 
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(PaymentFormConfigurationServiceImpl.class);
     private static final String GET_PAYMENT_FORM_CONFIGURATION = "getPaymentFormConfiguration";
+    private static final String PAYMENT_FORM_LOGO_RESPONSE_FILE = "PaymentFormLogoResponseFile";
+    private static final String PAYMENT_FORM_LOGO_RESPONSE_LINK = "PaymentFormLogoResponseLink";
+    private static final String SANDBOX_APM = "Sandbox APM";
+    private static final String SANDBOX_APM_LOGO = "Sandbox APM logo";
 
     @Override
     public PaymentFormConfigurationResponse getPaymentFormConfiguration(PaymentFormConfigurationRequest paymentFormConfigurationRequest) {
@@ -54,6 +61,8 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                 .aPaymentFormConfigurationResponseSpecific()
                 .withPaymentForm( noFieldForm )
                 .build();
+
+
         // The service tested by this request is not PaymentFormConfigurationService. So the plugin returns a NoField form.
         if( !amount.startsWith("3") ){
             return noFieldResponse;
@@ -149,17 +158,121 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
         }
     }
 
+    /**
+     * Return a PaymentFormLogoResponse according the magic amount set in the contractConfiguration of a PaymentFormLogoRequest
+     * @param paymentFormLogoRequest
+     * @return
+     */
     @Override
     public PaymentFormLogoResponse getPaymentFormLogo(PaymentFormLogoRequest paymentFormLogoRequest) {
         this.verifyRequest(paymentFormLogoRequest);
 
+        // PaymentFormLogoResponse builder parameter initialisation
+        String type = "";
+        int height = 58;
+        int width = 156;
+        String title = SANDBOX_APM;
+        String alt = SANDBOX_APM_LOGO;
+        URL url = null;
+
+        try {
+            url = new URL("http://www.google.fr");
+        } catch (MalformedURLException e) {
+           LOGGER.info("Unable to create an url : {0    } ",  e);
+        }
+
+        // Set PaymentFormLogoResponse parameter according to the amount
+        if (paymentFormLogoRequest.getContractConfiguration().getContractProperties().containsKey("PaymentFormLogoResponseType")) {
+            String paymentFormLogoResponseType = paymentFormLogoRequest.getContractConfiguration().getContractProperties().get("PaymentFormLogoResponseType").getValue();
+            switch (paymentFormLogoResponseType) {
+                case "30401":
+                    width = -156;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_LINK;
+                    break;
+                case "30402":
+                    height = -58;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_LINK;
+                    break;
+                case "30403":
+                    url = null;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_LINK;
+                    break;
+                case "30404":
+                    title = null;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_LINK;
+                    break;
+                case "30405":
+                    alt = null;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_LINK;
+                    break;
+                case "30406":
+                    width = -156;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_FILE;
+                    break;
+                case "30407":
+                    height = -58;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_FILE;
+                    break;
+                case "30408":
+                    title = null;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_FILE;
+                    break;
+                case "30409":
+                    alt = null;
+                    type = PAYMENT_FORM_LOGO_RESPONSE_FILE;
+                    break;
+                default:
+                    LOGGER.info("Unable to find the amount set in the PaymentFormLogoResponseType key");
+            }
+
+            try {
+                // Return the PaymentFormLogoResponse according to the amount set in the contractConfiguration
+                if (type.equals(PAYMENT_FORM_LOGO_RESPONSE_LINK)) {
+                    return PaymentFormLogoResponseLink.PaymentFormLogoResponseLinkBuilder.aPaymentFormLogoResponseLink()
+                            .withHeight(height)
+                            .withWidth(width)
+                            .withTitle(title)
+                            .withAlt(alt)
+                            .withUrl(url)
+                            .build();
+                } else if (type.equals(PAYMENT_FORM_LOGO_RESPONSE_FILE)) {
+                    return PaymentFormLogoResponseFile.PaymentFormLogoResponseFileBuilder.aPaymentFormLogoResponseFile()
+                            .withHeight(height)
+                            .withWidth(width)
+                            .withTitle(title)
+                            .withAlt(alt)
+                            .build();
+                }
+
+
+            } catch (IllegalStateException e) {
+                // if the PaymentFormLogoResponse builder throw an exception because of an error in the parameter, we log it and return a correct PaymentLogoResponse
+                LOGGER.error("Unable create an incorrect PaymentFormLogoResponse :", e);
+            }
+        }
+        // Return a correct PaymentFormLogoResponse according to the type of response expected by the caller
+        if (type.equals(PAYMENT_FORM_LOGO_RESPONSE_LINK)) {
+            try {
+                return PaymentFormLogoResponseLink.PaymentFormLogoResponseLinkBuilder.aPaymentFormLogoResponseLink()
+                        .withHeight(58)
+                        .withWidth(156)
+                        .withTitle(SANDBOX_APM)
+                        .withAlt(SANDBOX_APM_LOGO)
+                        .withUrl(new URL("http://www.google.fr"))
+                        .build();
+            } catch (MalformedURLException e) {
+                LOGGER.info("Unable to create an url : ", e);
+            }
+        }
+
         return PaymentFormLogoResponseFile.PaymentFormLogoResponseFileBuilder.aPaymentFormLogoResponseFile()
-                .withHeight( 58 )
-                .withWidth( 156 )
-                .withTitle("Sandbox APM")
-                .withAlt("Sandbox APM logo")
+                .withHeight(58)
+                .withWidth(156)
+                .withTitle(SANDBOX_APM)
+                .withAlt(SANDBOX_APM_LOGO)
                 .build();
     }
+
 
     @Override
     public PaymentFormLogo getLogo(String s, Locale locale) {
@@ -173,8 +286,8 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                 return recoverByteArrayFromImage(logo);
 
         } catch (IOException e) {
-            LOGGER.error("Unable to load the logo file: " + e);
-            throw new PluginException("Plugin error: unable to load the logo file", e);
+            LOGGER.error("Unable to load the logo file: ", e);
+            throw new PluginException("Plugin error: unable to load the logo file : ", e);
         }
     }
 
@@ -194,8 +307,8 @@ public class PaymentFormConfigurationServiceImpl extends AbstractService<Payment
                     .build();
 
         }catch (IOException e) {
-            LOGGER.error("Unable to recover byte array from image : " + e);
-            throw new PluginException("Plugin error: unable to recover byte array from image", e);
+            LOGGER.error("Unable to recover byte array from image : ", e);
+            throw new PluginException("Plugin error: unable to recover byte array from image : ", e);
         }
     }
 

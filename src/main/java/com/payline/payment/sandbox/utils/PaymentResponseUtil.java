@@ -204,8 +204,8 @@ public class PaymentResponseUtil {
                     .build()
             );
         } catch (MalformedURLException e) {
-            LOGGER.error("PaymentFormDisplayFieldIFrame unable to create the URL: " + e);
-            throw new PluginException("Plugin error, PaymentFormDisplayFieldIFrame unable to create the URL: " + e);
+            LOGGER.error("PaymentFormDisplayFieldIFrame unable to create the URL: ", e);
+            throw new PluginException("Plugin error, PaymentFormDisplayFieldIFrame unable to create the URL: ", e);
         }
 
         // Add PaymentFormDisplayFieldLink
@@ -216,8 +216,8 @@ public class PaymentResponseUtil {
                     .withUrl(new URL("https://www.google.com"))
                     .build());
         } catch (MalformedURLException e) {
-            LOGGER.error("PaymentFormDisplayFieldLink unable to create the URL: " + e);
-            throw new PluginException("Plugin error, PaymentFormDisplayFieldLink unable to create the URL: " + e);
+            LOGGER.error("PaymentFormDisplayFieldLink unable to create the URL: ", e);
+            throw new PluginException("Plugin error, PaymentFormDisplayFieldLink unable to create the URL: ", e);
         }
 
         // Add PaymentFormDisplayFieldText
@@ -237,6 +237,8 @@ public class PaymentResponseUtil {
                 .withRequiredErrorMessage(REQUIRED_ERROR_MESSAGE)
                 .withSecured(true)
                 .withValidationErrorMessage(VALIDATION_ERROR_MESSAGE)
+                .withCurrencyCode("978")
+                .withCurrencyLocale("")
                 .build());
 
         // Add PaymentFormInputFieldBic
@@ -386,8 +388,8 @@ public class PaymentResponseUtil {
                     .withAsync(true)
                     .build();
         } catch (MalformedURLException e) {
-            LOGGER.error("PartnerWidgetScriptImport unable to create the URL: " + e);
-            throw new PluginException("Plugin error, PartnerWidgetScriptImport unable to create the URL: " + e);
+            LOGGER.error("PartnerWidgetScriptImport unable to create the URL: ", e);
+            throw new PluginException("Plugin error, PartnerWidgetScriptImport unable to create the URL: ",e);
         }
 
         // div that contains the script to load
@@ -425,7 +427,7 @@ public class PaymentResponseUtil {
                 LOGGER.info("Attente de réponse de l'API ... ");
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
-                LOGGER.error("Error during the delay time: " + e);
+                LOGGER.error("Error during the delay time: ", e);
                 // Restore interrupted state...
                 Thread.currentThread().interrupt();
             }
