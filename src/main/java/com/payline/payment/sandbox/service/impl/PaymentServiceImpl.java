@@ -103,8 +103,8 @@ public class PaymentServiceImpl extends AbstractService<PaymentResponse> impleme
                     .withUrl(new URL("https", "www.google.com", "/fr"))
                     .build();
         } catch (MalformedURLException e) {
-            LOGGER.error("RedirectionRequest unable to create the URL: " + e);
-            throw new PluginException("Plugin error, RedirectionRequest unable to create the URL: " + e);
+            LOGGER.error("RedirectionRequest unable to create the URL: ", e);
+            throw new PluginException("Plugin error, RedirectionRequest unable to create the URL: ", e);
         }
         if( "10200".equals( amount ) || amount.startsWith("2") ){
             Logger.log(this.getClass().getSimpleName(),PAYMENT_REQUEST, amount, "PaymentResponseRedirect avec redirectionRequest & partnerTransactionId");

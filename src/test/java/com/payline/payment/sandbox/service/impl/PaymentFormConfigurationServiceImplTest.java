@@ -1,7 +1,10 @@
 package com.payline.payment.sandbox.service.impl;
 
 import com.payline.payment.sandbox.MockUtils;
+import com.payline.payment.sandbox.utils.Constants;
 import com.payline.pmapi.bean.common.Amount;
+import com.payline.pmapi.bean.payment.ContractConfiguration;
+import com.payline.pmapi.bean.payment.ContractProperty;
 import com.payline.pmapi.bean.paymentform.bean.form.BankTransferForm;
 import com.payline.pmapi.bean.paymentform.bean.form.CustomForm;
 import com.payline.pmapi.bean.paymentform.bean.form.NoFieldForm;
@@ -12,6 +15,9 @@ import com.payline.pmapi.bean.paymentform.response.configuration.PaymentFormConf
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseFailure;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseProvided;
 import com.payline.pmapi.bean.paymentform.response.configuration.impl.PaymentFormConfigurationResponseSpecific;
+import com.payline.pmapi.bean.paymentform.response.logo.PaymentFormLogoResponse;
+import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseFile;
+import com.payline.pmapi.bean.paymentform.response.logo.impl.PaymentFormLogoResponseLink;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +28,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigInteger;
 import java.util.Currency;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
@@ -224,6 +233,205 @@ class PaymentFormConfigurationServiceImplTest {
     void paymentRequest_PaymentFormLogoRequest() {
         doReturn(null).when(mockRequest).getLocale();
         assertThrows(IllegalArgumentException.class, () -> service.getPaymentFormLogo(mockLogoRequest));
+    }
+    /**
+     * This test case ensures that, when an 30401 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a negative width.
+     */
+    @Test
+    void PaymentFormLogoReponseLinkWithWidthError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30401" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseLink.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30402 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a negative height.
+     */
+    @Test
+    void PaymentFormLogoReponseLinkWithHeightError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30402" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseLink.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30403 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a null Url.
+     */
+    @Test
+    void PaymentFormLogoReponseLinkWithUrlError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30403" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseLink.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30404 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a null Title.
+     */
+    @Test
+    void PaymentFormLogoReponseLinkWithTitleError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30404" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseLink.class, response.getClass());
+    }
+
+    /**
+     * This test case ensures that, when an 30405 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a null Alt.
+     */
+    @Test
+    void PaymentFormLogoReponseLinkWithAltError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30405" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseLink.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30406 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a negative Width.
+     */
+    @Test
+    void PaymentFormLogoReponseFileWithWidthError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30406" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseFile.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30407 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a negative Height.
+     */
+    @Test
+    void PaymentFormLogoReponseFileWithHeightError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30407" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseFile.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30408 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a null Title.
+     */
+    @Test
+    void PaymentFormLogoReponseFileWithTitleError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30408" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseFile.class, response.getClass());
+    }
+    /**
+     * This test case ensures that, when an 30409 amount is given,
+     * the method returns a PaymentFormLogoResponseLink with a null Alt.
+     */
+    @Test
+    void PaymentFormLogoReponseFileWithAltError() {
+        Map<String, ContractProperty> contractProperties = new HashMap<>();
+
+        contractProperties.put(Constants.ContractConfigurationKeys.PAYMENT_FORM_LOGO_RESPONSE_TYPE,
+                new ContractProperty( "30409" ));
+
+        PaymentFormLogoRequest request = PaymentFormLogoRequest.PaymentFormLogoRequestBuilder.aPaymentFormLogoRequest()
+                .withContractConfiguration(new ContractConfiguration("Sandbox APM", contractProperties))
+                .withLocale(Locale.getDefault())
+                .withEnvironment(MockUtils.anEnvironment())
+                .withPartnerConfiguration(MockUtils.aPartnerConfiguration())
+                .build();
+
+        PaymentFormLogoResponse response = service.getPaymentFormLogo(request);
+
+        assertEquals(PaymentFormLogoResponseFile.class, response.getClass());
     }
 
     /**
